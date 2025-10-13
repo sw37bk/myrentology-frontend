@@ -28,7 +28,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           phone: '+78001234567',
           subscription_tier: 'pro' as const,
           subscription_end: '2099-12-31',
-          role: 'admin'
+          role: 'admin' as const
         };
         localStorage.setItem('auth_token', 'admin_token');
         set({ user: adminUser, isAuthenticated: true });

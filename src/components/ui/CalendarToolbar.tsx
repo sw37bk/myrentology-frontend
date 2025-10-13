@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Space, Typography } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import moment from 'moment';
-import 'moment/locale/ru';
+// import 'moment/locale/ru';
 
 moment.locale('ru');
 
