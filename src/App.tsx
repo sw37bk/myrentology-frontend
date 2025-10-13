@@ -13,7 +13,7 @@ import { ResourcesPage } from './pages/ResourcesPage';
 import { ChatsPage } from './pages/ChatsPage';
 import { FinancesPage } from './pages/FinancesPage';
 import { SettingsPage } from './pages/SettingsPage';
-import { AdminPage } from './pages/AdminPage';
+import { AdminPageSimple as AdminPage } from './pages/AdminPageSimple';
 
 const queryClient = new QueryClient();
 
@@ -36,7 +36,7 @@ function App() {
               </ProtectedRoute>
             }>
               <Route index element={<Navigate to="/calendar" replace />} />
-              <Route path="calendar" element={<CalendarPage />} />
+              <Route path="calendar" element={<ChatsPage />} />
               <Route path="products" element={<Navigate to="/resources" replace />} />
               <Route path="resources" element={<ResourcesPage />} />
               <Route path="chats" element={<ChatsPage />} />
