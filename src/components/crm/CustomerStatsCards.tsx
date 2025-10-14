@@ -19,46 +19,55 @@ interface CustomerStats {
 }
 
 interface CustomerStatsCardsProps {
-  stats: CustomerStats;
+  stats?: CustomerStats;
   loading?: boolean;
 }
 
 export const CustomerStatsCards: React.FC<CustomerStatsCardsProps> = ({ stats, loading }) => {
+  const safeStats = stats || {
+    total_customers: 0,
+    new_customers_today: 0,
+    repeat_customers: 0,
+    vip_customers: 0,
+    average_bookings_per_customer: 0,
+    customer_retention_rate: 0,
+  };
+
   const cards = [
     {
       title: 'Всего клиентов',
-      value: stats.total_customers,
+      value: safeStats.total_customers,
       icon: <TeamOutlined />,
       color: '#1890ff',
     },
     {
       title: 'Новых сегодня',
-      value: stats.new_customers_today,
+      value: safeStats.new_customers_today,
       icon: <UserAddOutlined />,
       color: '#52c41a',
     },
     {
       title: 'Постоянных клиентов',
-      value: stats.repeat_customers,
+      value: safeStats.repeat_customers,
       icon: <StarOutlined />,
       color: '#fa8c16',
     },
     {
       title: 'VIP клиентов',
-      value: stats.vip_customers,
+      value: safeStats.vip_customers,
       icon: <CrownOutlined />,
       color: '#722ed1',
     },
     {
       title: 'Среднее бронирований',
-      value: stats.average_bookings_per_customer,
+      value: safeStats.average_bookings_per_customer,
       icon: <BarChartOutlined />,
       color: '#13c2c2',
       precision: 1,
     },
     {
       title: 'Удержание клиентов',
-      value: stats.customer_retention_rate,
+      value: safeStats.customer_retention_rate,
       icon: <RocketOutlined />,
       color: '#eb2f96',
       suffix: '%',

@@ -99,7 +99,7 @@ export const CRMPage: React.FC = () => {
           </Button>
         </div>
 
-        <CustomerStatsCards stats={stats!} loading={statsLoading} />
+        <CustomerStatsCards stats={stats} loading={statsLoading} />
 
         <Tabs 
           activeKey={activeTab} 
