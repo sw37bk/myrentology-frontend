@@ -10,6 +10,7 @@ import {
   UserOutlined,
   LogoutOutlined,
   SecurityScanOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -41,6 +42,11 @@ export const MainLayout: React.FC = () => {
       key: '/finances',
       icon: <DollarOutlined />,
       label: 'Финансы',
+    },
+    {
+      key: '/crm',
+      icon: <TeamOutlined />,
+      label: 'CRM',
     },
     {
       key: '/settings',
@@ -163,6 +169,7 @@ const getPageTitle = (pathname: string) => {
     '/calendar': 'Календарь бронирований',
     '/resources': 'Управление ресурсами',
     '/chats': 'Переписки с клиентами',
+    '/crm': 'CRM система',
     '/finances': 'Финансовая аналитика',
     '/settings': 'Настройки системы',
     '/admin': 'Панель администратора',

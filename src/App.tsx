@@ -14,6 +14,7 @@ import { ChatsPage } from './pages/ChatsPage';
 import { FinancesPage } from './pages/FinancesPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AdminPageSimple as AdminPage } from './pages/AdminPageSimple';
+import { CRMPage } from './pages/CRMPage';
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ function App() {
               <Route path="products" element={<Navigate to="/resources" replace />} />
               <Route path="resources" element={<ResourcesPage />} />
               <Route path="chats" element={<ChatsPage />} />
+              <Route path="crm" element={<CRMPage />} />
               <Route path="finances" element={<FinancesPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="admin" element={<AdminPage />} />

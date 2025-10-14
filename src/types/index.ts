@@ -19,11 +19,16 @@ export interface Product {
 export interface Booking {
   id: number;
   product: Product;
+  customer_id: number;
   customer_name: string;
   customer_phone: string;
   start_date: string;
   end_date: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  total_amount: number;
+  discount_amount?: number;
+  loyalty_points_used?: number;
+  notes?: string;
   title?: string;
 }
 
@@ -160,4 +165,52 @@ export interface SystemSettings {
   email_smtp_port?: number;
   email_smtp_user?: string;
   email_smtp_pass?: string;
+}
+
+// CRM типы
+export interface Customer {
+  id: number;
+  name: string;
+  phone: string;
+  email?: string;
+  source: 'avito' | 'website' | 'recommendation' | 'other';
+  total_bookings: number;
+  total_spent: number;
+  loyalty_points: number;
+  last_booking_date?: string;
+  first_booking_date: string;
+  notes?: string;
+  tags: string[];
+  status: 'active' | 'inactive' | 'vip';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CustomerNote {
+  id: number;
+  customer_id: number;
+  author_id: number;
+  content: string;
+  type: 'call' | 'meeting' | 'note' | 'email' | 'system';
+  is_important: boolean;
+  created_at: string;
+}
+
+export interface LoyaltyTransaction {
+  id: number;
+  customer_id: number;
+  type: 'earn' | 'spend' | 'expire';
+  points: number;
+  description: string;
+  booking_id?: number;
+  created_at: string;
+}
+
+export interface CustomerStats {
+  total_customers: number;
+  new_customers_today: number;
+  repeat_customers: number;
+  vip_customers: number;
+  average_bookings_per_customer: number;
+  customer_retention_rate: number;
 }
