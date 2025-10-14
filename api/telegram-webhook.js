@@ -1,4 +1,4 @@
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -18,13 +18,9 @@ export default function handler(req, res) {
           '/subscribe - Подписаться\n' +
           '/status - Статус'
         );
-      }
-      
-      if (text === '/subscribe') {
+      } else if (text === '/subscribe') {
         await sendMessage(chatId, '✅ Вы подписались на уведомления @rentology_bot!');
-      }
-      
-      if (text === '/status') {
+      } else if (text === '/status') {
         await sendMessage(chatId, '📊 <b>Статус:</b> Подписан');
       }
     }
