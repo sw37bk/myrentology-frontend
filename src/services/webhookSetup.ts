@@ -4,7 +4,7 @@ const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 export const webhookSetup = {
   // Установка webhook на ваш домен
   setWebhook: async () => {
-    const webhookUrl = 'https://rental-crm-frontend-llv33ftxr-sw37bks-projects.vercel.app/api/telegram-webhook';
+    const webhookUrl = 'https://myrentology.ru/api/telegram-webhook';
     
     try {
       const response = await fetch(`${TELEGRAM_API}/setWebhook`, {
