@@ -29,10 +29,21 @@ export const TelegramLink: React.FC = () => {
       <Card>
         <Alert
           message="Запрос отправлен"
-          description="Перейдите в Telegram бот и подтвердите связывание аккаунта"
+          description="Перейдите в Telegram бот @rentology_bot и напишите /start"
           type="success"
           showIcon
           icon={<CheckCircleOutlined />}
+          action={
+            <Button 
+              size="small" 
+              onClick={() => {
+                setIsLinked(false);
+                setTelegramContact('');
+              }}
+            >
+              Попробовать снова
+            </Button>
+          }
         />
       </Card>
     );

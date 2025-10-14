@@ -11,10 +11,22 @@ export default function handler(req, res) {
       const text = update.message.text;
 
       if (text === '/start') {
-        console.log('Start command received');
+        await sendMessage(chatId, 
+          '🚗 <b>Добро пожаловать в @rentology_bot!</b>\n\n' +
+          'Здесь вы получите уведомления о бронированиях.\n\n' +
+          '<b>Команды:</b>\n' +
+          '/subscribe - Подписаться\n' +
+          '/status - Статус'
+        );
       }
       
-      console.log('Other commands:', text);
+      if (text === '/subscribe') {
+        await sendMessage(chatId, '✅ Вы подписались на уведомления @rentology_bot!');
+      }
+      
+      if (text === '/status') {
+        await sendMessage(chatId, '📊 <b>Статус:</b> Подписан');
+      }
     }
 
     res.status(200).json({ ok: true });
