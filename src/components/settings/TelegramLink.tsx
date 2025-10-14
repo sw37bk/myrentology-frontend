@@ -6,16 +6,16 @@ import { telegramApi } from '../../services/telegramService';
 const { Title, Paragraph, Text } = Typography;
 
 export const TelegramLink: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [telegramContact, setTelegramContact] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLinked, setIsLinked] = useState(false);
 
   const handleLinkAccount = async () => {
-    if (!email) return;
+    if (!telegramContact) return;
     
     setIsLoading(true);
     try {
-      await telegramApi.registerUser(email, 'pending');
+      await telegramApi.registerUser(telegramContact, 'pending');
       setIsLinked(true);
     } catch (error) {
       console.error('Link failed:', error);
@@ -49,15 +49,15 @@ export const TelegramLink: React.FC = () => {
       <ol>
         <li>Найдите бота <Text code>@rentology_bot</Text> в Telegram</li>
         <li>Нажмите <Text code>/start</Text></li>
-        <li>Введите ваш email ниже и нажмите "Связать аккаунт"</li>
+        <li>Введите ваш логин Telegram или номер телефона ниже</li>
         <li>Подтвердите связывание в боте</li>
       </ol>
 
       <Space direction="vertical" style={{ width: '100%', marginTop: 16 }}>
         <Input
-          placeholder="Ваш email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="@username или +79991234567"
+          value={telegramContact}
+          onChange={(e) => setTelegramContact(e.target.value)}
           size="large"
         />
         
@@ -66,7 +66,7 @@ export const TelegramLink: React.FC = () => {
           icon={<SendOutlined />}
           onClick={handleLinkAccount}
           loading={isLoading}
-          disabled={!email}
+          disabled={!telegramContact}
           size="large"
         >
           Связать аккаунт
