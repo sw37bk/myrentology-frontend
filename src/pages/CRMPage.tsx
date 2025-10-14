@@ -24,6 +24,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { crmApi } from '../services/crm';
 import { CustomerStatsCards } from '../components/crm/CustomerStatsCards';
 import { CustomersTable } from '../components/crm/CustomersTable';
+import { LoyaltySettings } from '../components/settings/LoyaltySettings';
 
 const { Option } = Select;
 
@@ -162,29 +163,10 @@ export const CRMPage: React.FC = () => {
               label: (
                 <span>
                   <CrownOutlined />
-                  Программа лояльности
+                  Настройки лояльности
                 </span>
               ),
-              children: (
-                <Card title="Программа лояльности">
-                  <Row gutter={16}>
-                    <Col span={12}>
-                      <Card title="Правила начисления" size="small">
-                        <p>💎 100 баллов за каждую аренду</p>
-                        <p>👑 500 баллов за статус VIP</p>
-                        <p>🎁 1 балл = 1 рубль скидки</p>
-                      </Card>
-                    </Col>
-                    <Col span={12}>
-                      <Card title="Статистика программы" size="small">
-                        <p>📊 Всего начислено баллов: 15,240</p>
-                        <p>💰 Использовано баллов: 8,750</p>
-                        <p>👥 Участников программы: {stats?.total_customers}</p>
-                      </Card>
-                    </Col>
-                  </Row>
-                </Card>
-              ),
+              children: <LoyaltySettings />,
             },
             {
               key: 'analytics',
