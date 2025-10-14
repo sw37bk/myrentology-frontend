@@ -47,7 +47,7 @@ export const TelegramLink: React.FC = () => {
       </Paragraph>
 
       <ol>
-        <li>Найдите бота <Text code>@YourRentalBot</Text> в Telegram</li>
+        <li>Найдите бота <Text code>@rentology_bot</Text> в Telegram</li>
         <li>Нажмите <Text code>/start</Text></li>
         <li>Введите ваш email ниже и нажмите "Связать аккаунт"</li>
         <li>Подтвердите связывание в боте</li>

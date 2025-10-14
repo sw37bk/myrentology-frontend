@@ -104,6 +104,35 @@ export const AvitoSettings: React.FC = () => {
               >
                 {settings?.is_connected ? 'Обновить настройки' : 'Подключить'}
               </Button>
+              {settings?.is_connected && (
+                <Button 
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/avito-webhook', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          type: 'message',
+                          client_id: settings.client_id,
+                          chat_id: 'test_chat_123',
+                          message: { text: 'Тестовое сообщение' },
+                          item: { id: 'test_item', title: 'Тестовое объявление' },
+                          user: { name: 'Тестовый клиент', phone: '+79991234567' }
+                        })
+                      });
+                      if (response.ok) {
+                        alert('Тест вебхука успешен!');
+                      } else {
+                        alert('Ошибка теста вебхука');
+                      }
+                    } catch (error) {
+                      alert('Ошибка: ' + error);
+                    }
+                  }}
+                >
+                  Тест вебхука
+                </Button>
+              )}
             </Space>
           </Form.Item>
         </Form>
