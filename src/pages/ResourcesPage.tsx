@@ -16,6 +16,7 @@ import {
 import { PlusOutlined, EditOutlined, DeleteOutlined, ShopOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productsApi } from '../services/products';
+import { ResourceAvitoLink } from '../components/resources/ResourceAvitoLink';
 import type { Product } from '../types';
 
 export const ResourcesPage: React.FC = () => {
@@ -117,6 +118,18 @@ export const ResourcesPage: React.FC = () => {
         <Tag color={isActive ? 'green' : 'red'}>
           {isActive ? 'Активен' : 'Неактивен'}
         </Tag>
+      ),
+    },
+    {
+      title: 'Авито',
+      key: 'avito',
+      render: (_: any, record: Product) => (
+        <ResourceAvitoLink 
+          resource={record} 
+          onUpdate={(id, data) => {
+            updateMutation.mutate({ id, data });
+          }}
+        />
       ),
     },
     {
