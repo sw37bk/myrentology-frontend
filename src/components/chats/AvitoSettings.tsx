@@ -44,14 +44,13 @@ export const AvitoSettings: React.FC = () => {
         <Title level={3}>Настройки интеграции с Авито</Title>
         
         <Paragraph>
-          Для подключения интеграции с Авито необходимо:
+          Для подключения интеграции с Авито:
         </Paragraph>
 
         <ol>
-          <li>Создать приложение в <a href="https://avito.ru/developers" target="_blank" rel="noopener noreferrer">кабинете разработчика Авито</a></li>
-          <li>Получить Client ID и Client Secret</li>
-          <li>Настроить вебхук с URL: <Text code>https://your-domain.com/api/avito/webhook</Text></li>
-          <li>Ввести данные ниже</li>
+          <li>Получите Client ID и Client Secret в <a href="https://avito.ru/profile/messenger" target="_blank" rel="noopener noreferrer">настройках мессенджера Авито</a></li>
+          <li>Введите ваши ключи ниже</li>
+          <li>Мы автоматически настроим получение сообщений</li>
         </ol>
 
         {settings?.is_connected && (
@@ -82,18 +81,18 @@ export const AvitoSettings: React.FC = () => {
         >
           <Form.Item
             name="client_id"
-            label="Client ID"
-            rules={[{ required: true, message: 'Введите Client ID' }]}
+            label="Ваш Client ID от Авито"
+            rules={[{ required: true, message: 'Введите ваш Client ID' }]}
           >
-            <Input placeholder="tp6O4qVA8gcFZXG6XGsm" defaultValue="tp6O4qVA8gcFZXG6XGsm" />
+            <Input placeholder="Введите ваш Client ID от Авито" />
           </Form.Item>
 
           <Form.Item
             name="client_secret"
-            label="Client Secret"
-            rules={[{ required: true, message: 'Введите Client Secret' }]}
+            label="Ваш Client Secret от Авито"
+            rules={[{ required: true, message: 'Введите ваш Client Secret' }]}
           >
-            <Input.Password placeholder="edMPRZgEoGhtQfID-tqLqmvmQaFax9_-8tLKL4-3" defaultValue="edMPRZgEoGhtQfID-tqLqmvmQaFax9_-8tLKL4-3" />
+            <Input.Password placeholder="Введите ваш Client Secret от Авито" />
           </Form.Item>
 
           <Form.Item>
