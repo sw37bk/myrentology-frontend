@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Card, Form, Input, Switch, Button, List, Space, Tag, Modal, message } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Card, Form, Input, Switch, Button, List, Space, Tag, Modal, message, Alert } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, CrownOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { aiAssistantApi } from '../../services/aiAssistant';
+import { useAuthStore } from '../../stores/authStore';
 
 interface AIPrompt {
   id: number;
@@ -21,6 +22,11 @@ export const AISettings: React.FC = () => {
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<AIPrompt | null>(null);
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  
+  const isPro = user?.subscription_tier === 'pro';
+  const isDemo = user?.subscription_tier === 'trial';
+  const hasAccess = isPro || isDemo;
 
   const { data: prompts = [] } = useQuery({
     queryKey: ['ai-prompts'],
@@ -103,7 +109,29 @@ export const AISettings: React.FC = () => {
 
   return (
     <Space direction="vertical" style={{ width: '100%' }} size="large">
-      <Card title="Настройки автоответчика">
+      {!hasAccess && (
+        <Alert
+          message="Требуется PRO тариф"
+          description="АИ ассистент доступен только на PRO тарифе или в период демо-доступа."
+          type="warning"
+          showIcon
+          action={
+            <Button type="primary" size="small">
+              Обновить до PRO
+            </Button>
+          }
+        />
+      )}
+      
+      <Card 
+        title={
+          <Space>
+            Настройки автоответчика
+            {isPro && <Tag color="gold" icon={<CrownOutlined />}>PRO</Tag>}
+            {isDemo && <Tag color="blue">Демо</Tag>}
+          </Space>
+        }
+      >
         <Form
           form={settingsForm}
           layout="vertical"
@@ -115,7 +143,11 @@ export const AISettings: React.FC = () => {
             label="Автоответчик"
             valuePropName="checked"
           >
-            <Switch checkedChildren="Включен" unCheckedChildren="Выключен" />
+            <Switch 
+              checkedChildren="Включен" 
+              unCheckedChildren="Выключен"
+              disabled={!hasAccess}
+            />
           </Form.Item>
 
           <Form.Item

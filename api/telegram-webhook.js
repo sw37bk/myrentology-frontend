@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
       if (text === '/start') {
         await sendMessage(chatId, 
-          '🚗 <b>Добро пожаловать в Рентологию!</b>\n\n' +
+          '🚗 <b>Добро пожаловать в @rentology_bot!</b>\n\n' +
           'Здесь вы получите уведомления о бронированиях.\n\n' +
           '<b>Команды:</b>\n' +
           '/subscribe - Подписаться\n' +
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       }
       
       if (text === '/subscribe') {
-        await sendMessage(chatId, '✅ Вы подписались на уведомления!');
+        await sendMessage(chatId, '✅ Вы подписались на уведомления @rentology_bot!');
       }
       
       if (text === '/status') {

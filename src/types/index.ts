@@ -182,6 +182,8 @@ export interface Customer {
   notes?: string;
   tags: string[];
   status: 'active' | 'inactive' | 'vip';
+  loyalty_config_id?: number;
+  free_hours_balance: number;
   created_at: string;
   updated_at: string;
 }
@@ -213,4 +215,18 @@ export interface CustomerStats {
   vip_customers: number;
   average_bookings_per_customer: number;
   customer_retention_rate: number;
+}
+
+export interface LoyaltyConfig {
+  id: number;
+  user_id: number;
+  name: string;
+  cashback_enabled: boolean;
+  cashback_percentage: number;
+  free_hours_enabled: boolean;
+  free_hours_threshold: number;
+  free_hours_amount: number;
+  points_per_ruble: number;
+  is_active: boolean;
+  created_at: string;
 }

@@ -85,7 +85,7 @@ export const AvitoSettings: React.FC = () => {
             label="Client ID"
             rules={[{ required: true, message: 'Введите Client ID' }]}
           >
-            <Input placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+            <Input placeholder="tp6O4qVA8gcFZXG6XGsm" defaultValue="tp6O4qVA8gcFZXG6XGsm" />
           </Form.Item>
 
           <Form.Item
@@ -93,7 +93,7 @@ export const AvitoSettings: React.FC = () => {
             label="Client Secret"
             rules={[{ required: true, message: 'Введите Client Secret' }]}
           >
-            <Input.Password placeholder="Введите секретный ключ" />
+            <Input.Password placeholder="edMPRZgEoGhtQfID-tqLqmvmQaFax9_-8tLKL4-3" defaultValue="edMPRZgEoGhtQfID-tqLqmvmQaFax9_-8tLKL4-3" />
           </Form.Item>
 
           <Form.Item>
