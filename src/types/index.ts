@@ -13,7 +13,31 @@ export interface Product {
   description?: string;
   price: number;
   is_active: boolean;
+  avito_item_id?: string;
+  avito_url?: string;
   created_at: string;
+}
+
+export interface AvitoAnalytics {
+  item_id: string;
+  views: number;
+  contacts: number;
+  favorites: number;
+  messages: number;
+  conversion_rate: number;
+  period: string;
+}
+
+export interface ResourceFunnel {
+  resource_id: number;
+  resource_name: string;
+  avito_item_id?: string;
+  views: number;
+  messages: number;
+  bookings: number;
+  conversion_views_to_messages: number;
+  conversion_messages_to_bookings: number;
+  total_conversion: number;
 }
 
 export interface Booking {

@@ -25,6 +25,7 @@ import { crmApi } from '../services/crm';
 import { CustomerStatsCards } from '../components/crm/CustomerStatsCards';
 import { CustomersTable } from '../components/crm/CustomersTable';
 import { LoyaltySettings } from '../components/settings/LoyaltySettings';
+import { FunnelAnalytics } from '../components/resources/FunnelAnalytics';
 
 const { Option } = Select;
 
@@ -167,6 +168,16 @@ export const CRMPage: React.FC = () => {
                 </span>
               ),
               children: <LoyaltySettings />,
+            },
+            {
+              key: 'funnel',
+              label: (
+                <span>
+                  <BarChartOutlined />
+                  Воронка продаж
+                </span>
+              ),
+              children: <FunnelAnalytics />,
             },
             {
               key: 'analytics',
