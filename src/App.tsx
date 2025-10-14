@@ -37,7 +37,7 @@ function App() {
               </ProtectedRoute>
             }>
               <Route index element={<Navigate to="/calendar" replace />} />
-              <Route path="calendar" element={<ChatsPage />} />
+              <Route path="calendar" element={<CalendarPage />} />
               <Route path="products" element={<Navigate to="/resources" replace />} />
               <Route path="resources" element={<ResourcesPage />} />
               <Route path="chats" element={<ChatsPage />} />

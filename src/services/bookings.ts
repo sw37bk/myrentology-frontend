@@ -1,6 +1,7 @@
 import type { Booking, CalendarEvent } from '../types';
 import { mockBookings, getMockCalendarEvents, mockProducts } from './mockData';
 import { telegramApi } from './telegramService';
+import { notificationBot } from './notificationBot';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -44,8 +45,9 @@ export const bookingsApi = {
 
     bookings.push(newBooking);
     
-    // Отправляем уведомление админу
+    // Отправляем уведомления
     try {
+      // Админу
       await telegramApi.sendToAdmin(
         `🆕 Новое бронирование!\n\n` +
         `📦 Товар: ${product.name}\n` +
@@ -54,8 +56,21 @@ export const bookingsApi = {
         `📅 Период: ${new Date(newBooking.start_date).toLocaleDateString('ru-RU')} - ${new Date(newBooking.end_date).toLocaleDateString('ru-RU')}\n` +
         `💰 Цена: ${product.price}₽/день`
       );
+      
+      // Клиенту (если есть chat_id)
+      if (data.customer_chat_id) {
+        await notificationBot.sendNotification(
+          data.customer_chat_id,
+          'booking_created',
+          {
+            dates: `${new Date(data.start_date).toLocaleDateString('ru-RU')} - ${new Date(data.end_date).toLocaleDateString('ru-RU')}`,
+            car: product.name,
+            amount: product.price
+          }
+        );
+      }
     } catch (error) {
-      console.log('Telegram notification failed:', error);
+      console.log('Notification failed:', error);
     }
     
     return newBooking;
@@ -72,18 +87,31 @@ export const bookingsApi = {
     const oldStatus = bookings[index].status;
     bookings[index] = { ...bookings[index], ...data };
     
-    // Отправляем уведомление админу об отмене
-    if (oldStatus !== 'cancelled' && data.status === 'cancelled') {
-      try {
+    try {
+      // Уведомление об отмене
+      if (oldStatus !== 'cancelled' && data.status === 'cancelled') {
         await telegramApi.sendToAdmin(
           `❌ Бронирование отменено\n\n` +
           `📦 Товар: ${bookings[index].product.name}\n` +
           `👤 Клиент: ${bookings[index].customer_name}\n` +
           `📅 Период: ${new Date(bookings[index].start_date).toLocaleDateString('ru-RU')} - ${new Date(bookings[index].end_date).toLocaleDateString('ru-RU')}`
         );
-      } catch (error) {
-        console.log('Telegram notification failed:', error);
       }
+      
+      // Уведомление о подтверждении
+      if (oldStatus !== 'confirmed' && data.status === 'confirmed' && data.customer_chat_id) {
+        await notificationBot.sendNotification(
+          data.customer_chat_id,
+          'booking_confirmed',
+          {
+            dates: `${new Date(bookings[index].start_date).toLocaleDateString('ru-RU')} - ${new Date(bookings[index].end_date).toLocaleDateString('ru-RU')}`,
+            car: bookings[index].product.name,
+            address: 'ул. Примерная, 123, Москва'
+          }
+        );
+      }
+    } catch (error) {
+      console.log('Notification failed:', error);
     }
     
     return bookings[index];
