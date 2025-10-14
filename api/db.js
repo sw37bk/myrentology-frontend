@@ -1,7 +1,7 @@
-import { sql } from '@vercel/postgres';
+const { sql } = require('@vercel/postgres');
 
 // Создание таблиц при первом запуске
-export async function initDatabase() {
+async function initDatabase() {
   try {
     // Таблица пользователей
     await sql`
@@ -98,7 +98,7 @@ export async function initDatabase() {
 }
 
 // API функции для работы с БД
-export const dbApi = {
+const dbApi = {
   // Пользователи
   async createUser(userData) {
     const result = await sql`
@@ -194,3 +194,5 @@ export const dbApi = {
     return result.rows[0];
   }
 };
+
+module.exports = { initDatabase, dbApi };
