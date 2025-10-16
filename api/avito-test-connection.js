@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
   try {
     // Получаем токен доступа
-    const authResponse = await fetch('https://api.avito.ru/token', {
+    const authResponse = await fetch('https://api.avito.ru/token/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
