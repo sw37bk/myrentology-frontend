@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, Button, Switch, message, Space, Alert } from 'antd';
+import { Card, Form, Input, Button, Alert, Space, Typography, message } from 'antd';
 import { ApiOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { AvitoSettings as AvitoSettingsType } from '../../types';
+
+const { Title, Paragraph } = Typography;
 
 interface AvitoSettingsProps {
   userId: number;
@@ -86,81 +88,105 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
     }
   };
 
-  return (
-    <Card 
-      title={<><ApiOutlined /> Настройки API Авито</>}
-      extra={
-        settings?.is_connected ? (
-          <Space>
-            <CheckCircleOutlined style={{ color: '#52c41a' }} />
-            <span style={{ color: '#52c41a' }}>Подключено</span>
-          </Space>
-        ) : (
-          <Space>
-            <ExclamationCircleOutlined style={{ color: '#faad14' }} />
-            <span style={{ color: '#faad14' }}>Не подключено</span>
-          </Space>
-        )
+  const handleDisconnect = async () => {
+    try {
+      const response = await fetch('/api/avito-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          user_id: userId,
+          client_id: '',
+          client_secret: '',
+          access_token: '',
+          is_connected: false
+        })
+      });
+
+      if (response.ok) {
+        message.success('Интеграция отключена');
+        form.resetFields();
+        setSettings(null);
       }
-    >
-      <Alert
-        message="Настройки API Авито"
-        description="Эти настройки будут использоваться для всех функций: объявления, переписки, аналитика. Получите Client ID и Client Secret в личном кабинете Авито API."
-        type="info"
-        showIcon
-        style={{ marginBottom: 16 }}
-      />
+    } catch (error) {
+      message.error('Ошибка отключения');
+    }
+  };
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSave}
-        initialValues={settings || {}}
-      >
-        <Form.Item
-          name="client_id"
-          label="Client ID"
-          rules={[{ required: true, message: 'Введите Client ID' }]}
+  return (
+    <div style={{ maxWidth: 600 }}>
+      <Card>
+        <Title level={3}>Настройки интеграции с Авито</Title>
+        
+        <Paragraph>
+          Для подключения интеграции с Авито:
+        </Paragraph>
+
+        <ol>
+          <li>Получите Client ID и Client Secret в <a href="https://avito.ru/profile/messenger" target="_blank" rel="noopener noreferrer">настройках мессенджера Авито</a></li>
+          <li>Введите ваши ключи ниже</li>
+          <li>Мы автоматически настроим получение сообщений</li>
+        </ol>
+
+        {settings?.is_connected && (
+          <Alert
+            message="Интеграция активна"
+            description={`Последняя синхронизация: ${settings.last_sync ? new Date(settings.last_sync).toLocaleString('ru-RU') : 'никогда'}`}
+            type="success"
+            showIcon
+            style={{ marginBottom: 16 }}
+            action={
+              <Button 
+                size="small" 
+                danger 
+                onClick={handleDisconnect}
+              >
+                Отключить
+              </Button>
+            }
+          />
+        )}
+
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSave}
+          initialValues={settings || undefined}
         >
-          <Input placeholder="Введите Client ID из личного кабинета Авито" />
-        </Form.Item>
+          <Form.Item
+            name="client_id"
+            label="Ваш Client ID от Авито"
+            rules={[{ required: true, message: 'Введите ваш Client ID' }]}
+          >
+            <Input placeholder="Введите ваш Client ID от Авито" />
+          </Form.Item>
 
-        <Form.Item
-          name="client_secret"
-          label="Client Secret"
-          rules={[{ required: true, message: 'Введите Client Secret' }]}
-        >
-          <Input.Password placeholder="Введите Client Secret из личного кабинета Авито" />
-        </Form.Item>
+          <Form.Item
+            name="client_secret"
+            label="Ваш Client Secret от Авито"
+            rules={[{ required: true, message: 'Введите ваш Client Secret' }]}
+          >
+            <Input.Password placeholder="Введите ваш Client Secret от Авито" />
+          </Form.Item>
 
-        <Form.Item
-          name="access_token"
-          label="Access Token"
-          help="Токен доступа (получается автоматически при авторизации)"
-        >
-          <Input.Password placeholder="Access Token" disabled />
-        </Form.Item>
-
-        <Form.Item>
-          <Space>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Сохранить настройки
-            </Button>
-            <Button onClick={testConnection} loading={testingConnection}>
-              Тестировать подключение
-            </Button>
-          </Space>
-        </Form.Item>
-      </Form>
-
-      {settings?.last_sync && (
-        <Alert
-          message={`Последняя синхронизация: ${new Date(settings.last_sync).toLocaleString()}`}
-          type="success"
-          showIcon
-          style={{ marginTop: 16 }}
-        />
-      )}
-    </Card>
+          <Form.Item>
+            <Space>
+              <Button 
+                type="primary" 
+                htmlType="submit"
+                loading={loading}
+              >
+                {settings?.is_connected ? 'Обновить настройки' : 'Подключить'}
+              </Button>
+              <Button 
+                onClick={testConnection} 
+                loading={testingConnection}
+              >
+                Тест подключения
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Card>
+    </div>
   );
 };

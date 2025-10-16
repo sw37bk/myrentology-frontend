@@ -31,7 +31,6 @@ interface Message {
 }
 import { ChatList } from '../components/chats/ChatList';
 import { ChatWindow } from '../components/chats/ChatWindow';
-import { AvitoSettings } from '../components/chats/AvitoSettings';
 import { AISettings } from '../components/chats/AISettings';
 
 const { TabPane } = Tabs;
@@ -160,10 +159,6 @@ export const ChatsPage: React.FC = () => {
                 />
               </Col>
             </Row>
-          </TabPane>
-
-          <TabPane tab="Настройки Авито" key="avito-settings">
-            <AvitoSettings />
           </TabPane>
 
           <TabPane 
