@@ -47,8 +47,10 @@ export const bookingsApi = {
     
     // Отправляем уведомления
     try {
-      // Админу
-      await telegramApi.sendToAdmin(
+      // Владельцу
+      const ownerId = 1; // В реальном приложении брать из аутентификации
+      await telegramApi.sendToUser(
+        ownerId,
         `🆕 Новое бронирование!\n\n` +
         `📦 Товар: ${product.name}\n` +
         `👤 Клиент: ${newBooking.customer_name}\n` +
@@ -90,7 +92,9 @@ export const bookingsApi = {
     try {
       // Уведомление об отмене
       if (oldStatus !== 'cancelled' && data.status === 'cancelled') {
-        await telegramApi.sendToAdmin(
+        const ownerId = 1;
+        await telegramApi.sendToUser(
+          ownerId,
           `❌ Бронирование отменено\n\n` +
           `📦 Товар: ${bookings[index].product.name}\n` +
           `👤 Клиент: ${bookings[index].customer_name}\n` +

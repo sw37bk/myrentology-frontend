@@ -27,12 +27,20 @@ export const ResourcesPage: React.FC = () => {
 
   const { data: resources = [], isLoading } = useQuery({
     queryKey: ['products'],
-    queryFn: productsApi.getList,
+    queryFn: () => {
+      const saved = localStorage.getItem('products');
+      return saved ? JSON.parse(saved) : productsApi.getList();
+    },
   });
 
   const createMutation = useMutation({
     mutationFn: productsApi.create,
-    onSuccess: () => {
+    onSuccess: (newProduct) => {
+      // Сохраняем в localStorage
+      const saved = JSON.parse(localStorage.getItem('products') || '[]');
+      saved.push(newProduct);
+      localStorage.setItem('products', JSON.stringify(saved));
+      
       message.success('Ресурс создан');
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setIsModalOpen(false);

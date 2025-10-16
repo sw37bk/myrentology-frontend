@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, Button, message, Space, Tag } from 'antd';
-import { LinkOutlined, BarChartOutlined } from '@ant-design/icons';
+import { Modal, Form, Input, Button, message, Space, Tag, Drawer } from 'antd';
+import { LinkOutlined, BarChartOutlined, PlusOutlined } from '@ant-design/icons';
 import { Product } from '../../types';
+import { AvitoAdCreator } from './AvitoAdCreator';
+import { avitoAdsApi } from '../../services/avitoAds';
 
 interface ResourceAvitoLinkProps {
   resource: Product;
@@ -10,6 +12,9 @@ interface ResourceAvitoLinkProps {
 
 export const ResourceAvitoLink: React.FC<ResourceAvitoLinkProps> = ({ resource, onUpdate }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreatorOpen, setIsCreatorOpen] = useState(false);
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
+  const [analytics, setAnalytics] = useState<any>(null);
   const [form] = Form.useForm();
 
   const handleSubmit = (values: any) => {
@@ -45,10 +50,31 @@ export const ResourceAvitoLink: React.FC<ResourceAvitoLinkProps> = ({ resource, 
             size="small" 
             icon={<BarChartOutlined />}
             type="link"
+            onClick={async () => {
+              try {
+                const avitoSettings = JSON.parse(localStorage.getItem('avito_settings') || '{}');
+                const stats = await avitoAdsApi.getAdStats(resource.avito_item_id!, {
+                  client_id: avitoSettings.client_id,
+                  access_token: avitoSettings.access_token
+                });
+                setAnalytics(stats);
+                setIsAnalyticsOpen(true);
+              } catch (error) {
+                message.error('Ошибка загрузки аналитики');
+              }
+            }}
           >
             Аналитика
           </Button>
         )}
+        <Button 
+          size="small" 
+          icon={<PlusOutlined />}
+          type="primary"
+          onClick={() => setIsCreatorOpen(true)}
+        >
+          Создать объявление
+        </Button>
       </Space>
 
       <Modal
@@ -93,6 +119,35 @@ export const ResourceAvitoLink: React.FC<ResourceAvitoLinkProps> = ({ resource, 
           </Form.Item>
         </Form>
       </Modal>
+
+      <AvitoAdCreator
+        resource={resource}
+        isOpen={isCreatorOpen}
+        onClose={() => setIsCreatorOpen(false)}
+        onSuccess={(adId, adUrl) => {
+          onUpdate(resource.id, {
+            avito_item_id: adId,
+            avito_url: adUrl
+          });
+        }}
+      />
+
+      <Drawer
+        title="Аналитика объявления"
+        open={isAnalyticsOpen}
+        onClose={() => setIsAnalyticsOpen(false)}
+        width={600}
+      >
+        {analytics && (
+          <div>
+            <p><strong>Просмотры:</strong> {analytics.views || 0}</p>
+            <p><strong>Контакты:</strong> {analytics.contacts || 0}</p>
+            <p><strong>Избранное:</strong> {analytics.favorites || 0}</p>
+            <p><strong>Сообщения:</strong> {analytics.messages || 0}</p>
+            <p><strong>Конверсия:</strong> {analytics.conversion_rate || 0}%</p>
+          </div>
+        )}
+      </Drawer>
     </>
   );
 };

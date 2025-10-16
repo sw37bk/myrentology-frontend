@@ -1,24 +1,57 @@
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const BOT_API_URL = 'https://telegram-bot-rydw.onrender.com';
+const API_URL = window.location.origin;
 
 export const telegramApi = {
-  // Отправка уведомления конкретному пользователю по его Telegram ID
-  sendToUser: async (telegramId: string, message: string): Promise<void> => {
-    await delay(500);
-    console.log(`[BOT] Sending to user ${telegramId}:`, message);
-    // Здесь будет API вызов к боту
+  // Связывание пользователя с Telegram
+  linkUser: async (userId: number, username?: string, phone?: string): Promise<{token: string, botUrl: string, message: string}> => {
+    try {
+      const response = await fetch(`${BOT_API_URL}/api/link-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, username, phone }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to link user');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Link user failed:', error);
+      throw error;
+    }
   },
 
-  // Отправка уведомления администратору
-  sendToAdmin: async (message: string): Promise<void> => {
-    await delay(500);
-    console.log('[BOT] Sending to admin:', message);
-    // Здесь будет API вызов к боту для отправки админу
+  // Отправка уведомления пользователю
+  sendToUser: async (userId: number, message: string): Promise<void> => {
+    try {
+      const response = await fetch(`${BOT_API_URL}/api/notify-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, message }),
+      });
+      
+      if (!response.ok) {
+        console.log(`User ${userId} not linked to Telegram`);
+        return;
+      }
+    } catch (error) {
+      console.error('Telegram notification failed:', error);
+    }
   },
 
-  // Регистрация пользователя в боте (связывание email с Telegram ID)
-  registerUser: async (email: string, telegramId: string): Promise<void> => {
-    await delay(500);
-    console.log(`[BOT] Registering user ${email} with Telegram ID ${telegramId}`);
-    // Здесь будет API вызов к боту для регистрации
+  // Проверка статуса связывания
+  checkLinkStatus: async (userId: number): Promise<any> => {
+    try {
+      const response = await fetch(`${BOT_API_URL}/api/link-status/${userId}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Check link status failed:', error);
+      return { linked: false };
+    }
   },
 };

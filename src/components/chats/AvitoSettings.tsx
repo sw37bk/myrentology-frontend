@@ -11,12 +11,18 @@ export const AvitoSettings: React.FC = () => {
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['avito-settings'],
-    queryFn: avitoApi.getSettings,
+    queryFn: () => {
+      // Загружаем из localStorage
+      const saved = localStorage.getItem('avito_settings');
+      return saved ? JSON.parse(saved) : avitoApi.getSettings();
+    },
   });
 
   const saveMutation = useMutation({
     mutationFn: avitoApi.saveSettings,
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Сохраняем в localStorage
+      localStorage.setItem('avito_settings', JSON.stringify(data));
       queryClient.invalidateQueries({ queryKey: ['avito-settings'] });
     },
   });

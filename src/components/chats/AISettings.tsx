@@ -30,7 +30,10 @@ export const AISettings: React.FC = () => {
 
   const { data: prompts = [] } = useQuery({
     queryKey: ['ai-prompts'],
-    queryFn: aiAssistantApi.getPrompts,
+    queryFn: () => {
+      const saved = localStorage.getItem('ai_prompts');
+      return saved ? JSON.parse(saved) : aiAssistantApi.getPrompts();
+    },
   });
 
   const { data: autoReplySettings } = useQuery({
@@ -40,7 +43,12 @@ export const AISettings: React.FC = () => {
 
   const createPromptMutation = useMutation({
     mutationFn: aiAssistantApi.createPrompt,
-    onSuccess: () => {
+    onSuccess: (newPrompt) => {
+      // Сохраняем в localStorage
+      const saved = JSON.parse(localStorage.getItem('ai_prompts') || '[]');
+      saved.push(newPrompt);
+      localStorage.setItem('ai_prompts', JSON.stringify(saved));
+      
       queryClient.invalidateQueries({ queryKey: ['ai-prompts'] });
       setIsPromptModalOpen(false);
       promptForm.resetFields();

@@ -3,6 +3,7 @@ import { Card, Switch, Button, Input, Form, Space, List, Tag, message } from 'an
 import { BellOutlined, SendOutlined, UserAddOutlined, ApiOutlined } from '@ant-design/icons';
 import { notificationBot } from '../../services/notificationBot';
 import { webhookSetup } from '../../services/webhookSetup';
+import { useAuthStore } from '../../stores/authStore';
 
 export const NotificationSettings: React.FC = () => {
   const [subscribers, setSubscribers] = useState<any[]>([]);
@@ -22,15 +23,37 @@ export const NotificationSettings: React.FC = () => {
 
   const sendTestNotification = async () => {
     try {
-      const result = await notificationBot.broadcast('booking_confirmed', {
-        dates: '15.06.2024 - 17.06.2024',
-        car: 'BMW X5',
-        address: 'ул. Тестовая, 123'
+      // Получаем текущего пользователя из authStore
+      const { user } = useAuthStore.getState();
+      
+      if (!user?.id) {
+        message.error('Пользователь не авторизован');
+        return;
+      }
+      
+      // Отправляем тестовое уведомление через наш бот
+      const response = await fetch('https://telegram-bot-rydw.onrender.com/api/notify-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          message: `🧪 Тестовое уведомление\n\n✅ Бронирование подтверждено!\n\n📅 15.06.2024 - 17.06.2024\n🚙 BMW X5\n📍 ул. Тестовая, 123\n\n📞 По вопросам: +7 (999) 123-45-67`
+        })
       });
       
-      message.success(`Отправлено ${result.sent} уведомлений`);
+      if (response.ok) {
+        message.success('Тестовое уведомление отправлено!');
+      } else {
+        const error = await response.json();
+        if (response.status === 404) {
+          message.error('Telegram не привязан. Сначала привяжите аккаунт в настройках.');
+        } else {
+          message.error('Ошибка отправки: ' + (error.error || 'Неизвестная ошибка'));
+        }
+      }
     } catch (error) {
-      message.error('Ошибка отправки');
+      message.error('Ошибка отправки уведомления');
+      console.error(error);
     }
   };
 
