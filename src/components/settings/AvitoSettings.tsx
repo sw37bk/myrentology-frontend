@@ -72,7 +72,7 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
     }
 
     const scopes = 'messenger:read,messenger:write,items:info,stats:read';
-    const redirectUri = 'https://myrentology.ru/api/avito-callback';
+    const redirectUri = 'https://myrentology.ru';
     const state = Math.random().toString(36).substring(7);
     
     localStorage.setItem('avito_oauth_state', state);
