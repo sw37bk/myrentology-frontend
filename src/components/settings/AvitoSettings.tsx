@@ -64,39 +64,37 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
     }
   };
 
-  const testConnection = async () => {
-    setTestingConnection(true);
-    try {
-      const values = form.getFieldsValue();
-      const response = await fetch('/api/avito-test-connection', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_id: values.client_id,
-          client_secret: values.client_secret
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        message.success('Подключение успешно');
-        
-        // Автоматически сохраняем токен
-        const updatedValues = {
-          ...values,
-          access_token: data.access_token
-        };
-        form.setFieldsValue(updatedValues);
-        await handleSave(updatedValues);
-      } else {
-        const errorData = await response.json();
-        message.error(errorData.error || 'Ошибка подключения к API Авито');
-      }
-    } catch (error) {
-      message.error('Ошибка тестирования подключения');
-    } finally {
-      setTestingConnection(false);
+  const startOAuthFlow = () => {
+    const values = form.getFieldsValue();
+    if (!values.client_id) {
+      message.error('Введите Client ID');
+      return;
     }
+
+    const scopes = 'messenger:read,messenger:write,items:info,stats:read';
+    const redirectUri = `${window.location.origin}/api/avito-callback`;
+    const state = Math.random().toString(36).substring(7);
+    
+    localStorage.setItem('avito_oauth_state', state);
+    localStorage.setItem('avito_oauth_user_id', userId.toString());
+    
+    const authUrl = `https://avito.ru/oauth?response_type=code&client_id=${values.client_id}&scope=${scopes}&state=${state}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    
+    window.open(authUrl, 'avitoAuth', 'width=600,height=700');
+    
+    // Прослушиваем сообщения от popup
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'AVITO_AUTH_SUCCESS') {
+        message.success('Подключение успешно!');
+        loadSettings();
+        window.removeEventListener('message', handleMessage);
+      } else if (event.data.type === 'AVITO_AUTH_ERROR') {
+        message.error('Ошибка авторизации');
+        window.removeEventListener('message', handleMessage);
+      }
+    };
+    
+    window.addEventListener('message', handleMessage);
   };
 
   const handleDisconnect = async () => {
@@ -189,10 +187,9 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
                 {settings?.is_connected ? 'Обновить настройки' : 'Подключить'}
               </Button>
               <Button 
-                onClick={testConnection} 
-                loading={testingConnection}
+                onClick={startOAuthFlow}
               >
-                Тест подключения
+                Подключить через Авито
               </Button>
             </Space>
           </Form.Item>
