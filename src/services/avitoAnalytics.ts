@@ -1,4 +1,5 @@
 import { AvitoAnalytics, ResourceFunnel } from '../types';
+import { avitoSettingsApi } from './avitoSettings';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -73,13 +74,18 @@ export const avitoAnalyticsApi = {
   },
 
   // Синхронизация аналитики с Авито API
-  syncAnalytics: async (userCredentials: { client_id: string; access_token: string }): Promise<void> => {
+  syncAnalytics: async (userId: number): Promise<void> => {
+    const settings = await avitoSettingsApi.getSettings(userId);
+    if (!settings || !settings.is_connected) {
+      throw new Error('Настройки API Авито не настроены');
+    }
+
     await delay(1000);
     // Здесь будет реальный вызов к Avito API
     // const response = await fetch('https://api.avito.ru/core/v1/items/stats', {
     //   headers: {
-    //     'Authorization': `Bearer ${userCredentials.access_token}`,
-    //     'Client-Id': userCredentials.client_id
+    //     'Authorization': `Bearer ${settings.access_token}`,
+    //     'Client-Id': settings.client_id
     //   }
     // });
     console.log('Синхронизация аналитики с Авито...');

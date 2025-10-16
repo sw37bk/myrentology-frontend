@@ -4,6 +4,7 @@ import { LinkOutlined, BarChartOutlined, PlusOutlined } from '@ant-design/icons'
 import { Product } from '../../types';
 import { AvitoAdCreator } from './AvitoAdCreator';
 import { avitoAdsApi } from '../../services/avitoAds';
+import { useAuthStore } from '../../stores/authStore';
 
 interface ResourceAvitoLinkProps {
   resource: Product;
@@ -11,6 +12,7 @@ interface ResourceAvitoLinkProps {
 }
 
 export const ResourceAvitoLink: React.FC<ResourceAvitoLinkProps> = ({ resource, onUpdate }) => {
+  const { user } = useAuthStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
@@ -52,11 +54,11 @@ export const ResourceAvitoLink: React.FC<ResourceAvitoLinkProps> = ({ resource, 
             type="link"
             onClick={async () => {
               try {
-                const avitoSettings = JSON.parse(localStorage.getItem('avito_settings') || '{}');
-                const stats = await avitoAdsApi.getAdStats(resource.avito_item_id!, {
-                  client_id: avitoSettings.client_id,
-                  access_token: avitoSettings.access_token
-                });
+                if (!user?.id) {
+                  message.error('Не удалось определить пользователя');
+                  return;
+                }
+                const stats = await avitoAdsApi.getAdStats(resource.avito_item_id!, user.id);
                 setAnalytics(stats);
                 setIsAnalyticsOpen(true);
               } catch (error) {

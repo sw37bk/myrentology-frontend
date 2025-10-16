@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, InputNumber, Select, Upload, Button, message, Steps, Row, Col } from 'antd';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { avitoAdsApi } from '../../services/avitoAds';
 import { Product } from '../../types';
+import { useAuthStore } from '../../stores/authStore';
 
 interface AvitoAdCreatorProps {
   resource: Product;
@@ -21,43 +22,26 @@ export const AvitoAdCreator: React.FC<AvitoAdCreatorProps> = ({
   onClose, 
   onSuccess 
 }) => {
+  const { user } = useAuthStore();
   const [form] = Form.useForm();
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [categories] = useState([
-    // Транспорт
-    { id: 10, name: 'Легковые автомобили', category: 'Транспорт' },
-    { id: 11, name: 'Мотоциклы и мототехника', category: 'Транспорт' },
-    { id: 12, name: 'Грузовики и спецтехника', category: 'Транспорт' },
-    { id: 13, name: 'Водный транспорт', category: 'Транспорт' },
-    
-    // Недвижимость
-    { id: 25, name: 'Квартиры', category: 'Недвижимость' },
-    { id: 27, name: 'Дома, дачи, коттеджи', category: 'Недвижимость' },
-    { id: 30, name: 'Коммерческая недвижимость', category: 'Недвижимость' },
-    
-    // Услуги
-    { id: 115, name: 'Предложения услуг', category: 'Услуги' },
-    
-    // Бытовая техника
-    { id: 43, name: 'Бытовая техника', category: 'Для дома' },
-    { id: 44, name: 'Мебель и интерьер', category: 'Для дома' },
-    { id: 47, name: 'Ремонт и строительство', category: 'Для дома' },
-    
-    // Электроника
-    { id: 52, name: 'Настольные компьютеры', category: 'Электроника' },
-    { id: 53, name: 'Ноутбуки', category: 'Электроника' },
-    { id: 58, name: 'Фототехника', category: 'Электроника' },
-    
-    // Хобби и отдых
-    { id: 61, name: 'Велосипеды', category: 'Хобби и отдых' },
-    { id: 64, name: 'Музыкальные инструменты', category: 'Хобби и отдых' },
-    { id: 66, name: 'Спорт и отдых', category: 'Хобби и отдых' },
-    
-    // Бизнес
-    { id: 75, name: 'Готовый бизнес', category: 'Бизнес' },
-    { id: 76, name: 'Оборудование для бизнеса', category: 'Бизнес' }
-  ]);
+  const [categories, setCategories] = useState<any[]>([]);
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const cats = await avitoAdsApi.getCategories();
+      setCategories(cats);
+    } catch (error) {
+      console.error('Ошибка загрузки категорий:', error);
+    }
+  };
+
+
   const [locations] = useState([
     { id: 637640, name: 'Москва' },
     { id: 641780, name: 'Санкт-Петербург' },
@@ -69,11 +53,8 @@ export const AvitoAdCreator: React.FC<AvitoAdCreatorProps> = ({
       const values = await form.validateFields();
       setLoading(true);
 
-      // Получаем настройки Авито из localStorage
-      const avitoSettings = JSON.parse(localStorage.getItem('avito_settings') || '{}');
-      
-      if (!avitoSettings.client_id || !avitoSettings.access_token) {
-        message.error('Настройте интеграцию с Авито');
+      if (!user?.id) {
+        message.error('Не удалось определить пользователя');
         return;
       }
 
@@ -96,10 +77,7 @@ export const AvitoAdCreator: React.FC<AvitoAdCreatorProps> = ({
         }
       };
 
-      const result = await avitoAdsApi.createAd(adData, {
-        client_id: avitoSettings.client_id,
-        access_token: avitoSettings.access_token
-      });
+      const result = await avitoAdsApi.createAd(adData, user.id);
 
       message.success('Объявление создано на Авито!');
       onSuccess(result.id, result.url);
@@ -157,18 +135,8 @@ export const AvitoAdCreator: React.FC<AvitoAdCreatorProps> = ({
                 rules={[{ required: true, message: 'Выберите категорию' }]}
               >
                 <Select placeholder="Выберите категорию" showSearch>
-                  {Object.entries(
-                    categories.reduce((acc, cat) => {
-                      if (!acc[cat.category]) acc[cat.category] = [];
-                      acc[cat.category].push(cat);
-                      return acc;
-                    }, {} as Record<string, any[]>)
-                  ).map(([categoryName, items]) => (
-                    <Select.OptGroup key={categoryName} label={categoryName}>
-                      {items.map(cat => (
-                        <Option key={cat.id} value={cat.id}>{cat.name}</Option>
-                      ))}
-                    </Select.OptGroup>
+                  {categories.map(cat => (
+                    <Option key={cat.id} value={cat.id}>{cat.name}</Option>
                   ))}
                 </Select>
               </Form.Item>

@@ -1,5 +1,6 @@
 import type { AvitoSettings, Chat, Message, AvitoWebhookPayload } from '../types';
 import { telegramApi } from './telegramService';
+import { avitoSettingsApi } from './avitoSettings';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -59,26 +60,24 @@ let messages: Message[] = [
 ];
 
 export const avitoApi = {
-  getSettings: async (): Promise<AvitoSettings | null> => {
-    await delay(300);
-    return avitoSettings[0] || null;
+  getSettings: async (userId: number): Promise<AvitoSettings | null> => {
+    return await avitoSettingsApi.getSettings(userId);
   },
 
   saveSettings: async (settings: Omit<AvitoSettings, 'id'>): Promise<AvitoSettings> => {
-    await delay(500);
-    const newSettings: AvitoSettings = {
-      ...settings,
-      id: 1,
-      is_connected: true,
-      last_sync: new Date().toISOString(),
-    };
-    avitoSettings = [newSettings];
-    return newSettings;
+    return await avitoSettingsApi.saveSettings(settings);
   },
 
-  disconnect: async (): Promise<void> => {
-    await delay(300);
-    avitoSettings = [];
+  disconnect: async (userId: number): Promise<void> => {
+    const settings = await avitoSettingsApi.getSettings(userId);
+    if (settings) {
+      await avitoSettingsApi.saveSettings({
+        ...settings,
+        is_connected: false,
+        access_token: undefined,
+        refresh_token: undefined
+      });
+    }
   },
 
   getChats: async (): Promise<Chat[]> => {
