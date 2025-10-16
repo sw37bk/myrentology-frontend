@@ -5,7 +5,32 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
+// Создаем таблицу если не существует
+async function ensureTable() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS avito_settings (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL UNIQUE,
+        client_id VARCHAR(255) NOT NULL,
+        client_secret VARCHAR(255) NOT NULL,
+        access_token TEXT,
+        refresh_token TEXT,
+        token_expires TIMESTAMP,
+        is_connected BOOLEAN DEFAULT false,
+        last_sync TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+  } catch (error) {
+    console.error('Table creation error:', error);
+  }
+}
+
 export default async function handler(req, res) {
+  await ensureTable();
+  
   if (req.method === 'GET') {
     const userId = req.query.userId || req.query.user_id;
     
