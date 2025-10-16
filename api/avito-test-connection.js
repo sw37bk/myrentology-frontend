@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Тестируем подключение к API Авито
+    // Получаем токен доступа
     const authResponse = await fetch('https://api.avito.ru/token', {
       method: 'POST',
       headers: {
@@ -20,27 +20,29 @@ export default async function handler(req, res) {
       body: new URLSearchParams({
         grant_type: 'client_credentials',
         client_id: client_id,
-        client_secret: client_secret,
-        scope: 'public_profile:read items:read items:write messenger:read messenger:write'
+        client_secret: client_secret
       })
     });
 
     if (!authResponse.ok) {
+      const errorText = await authResponse.text();
+      console.error('Auth error:', errorText);
       return res.status(400).json({ error: 'Неверные учетные данные API' });
     }
 
     const authData = await authResponse.json();
     
-    // Проверяем доступ к API, получив профиль пользователя
-    const profileResponse = await fetch('https://api.avito.ru/core/v1/accounts/self', {
+    // Тестируем доступ к API - получаем список объявлений
+    const itemsResponse = await fetch('https://api.avito.ru/core/v1/items?per_page=1', {
       headers: {
-        'Authorization': `Bearer ${authData.access_token}`,
-        'Client-Id': client_id
+        'Authorization': `Bearer ${authData.access_token}`
       }
     });
 
-    if (!profileResponse.ok) {
-      return res.status(400).json({ error: 'Ошибка доступа к API' });
+    if (!itemsResponse.ok) {
+      const errorText = await itemsResponse.text();
+      console.error('Items API error:', errorText);
+      return res.status(400).json({ error: 'Ошибка доступа к API объявлений' });
     }
 
     res.json({ 
