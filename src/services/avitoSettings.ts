@@ -3,7 +3,7 @@ import { AvitoSettings } from '../types';
 export const avitoSettingsApi = {
   // Получение настроек Авито для пользователя
   getSettings: async (userId: number): Promise<AvitoSettings | null> => {
-    const response = await fetch(`/api/avito-settings/${userId}`);
+    const response = await fetch(`/api/avito-settings?userId=${userId}`);
     if (!response.ok) {
       if (response.status === 404) return null;
       throw new Error('Ошибка получения настроек');

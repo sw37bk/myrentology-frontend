@@ -7,7 +7,11 @@ const pool = new Pool({
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
-    const { userId } = req.query;
+    const userId = req.query.userId || req.query.user_id;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'userId обязателен' });
+    }
     
     try {
       const result = await pool.query(
@@ -25,7 +29,11 @@ export default async function handler(req, res) {
       res.status(500).json({ error: 'Ошибка сервера' });
     }
   } else if (req.method === 'POST') {
-    const { user_id, client_id, client_secret, access_token, refresh_token } = req.body;
+    const { user_id, client_id, client_secret, access_token, refresh_token, is_connected } = req.body;
+    
+    if (!user_id || !client_id || !client_secret) {
+      return res.status(400).json({ error: 'Обязательные поля: user_id, client_id, client_secret' });
+    }
     
     try {
       const result = await pool.query(`
@@ -40,7 +48,7 @@ export default async function handler(req, res) {
           is_connected = $6,
           last_sync = NOW()
         RETURNING *
-      `, [user_id, client_id, client_secret, access_token, refresh_token, true]);
+      `, [user_id, client_id, client_secret, access_token || null, refresh_token || null, is_connected !== false]);
       
       res.json(result.rows[0]);
     } catch (error) {

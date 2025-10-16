@@ -38,16 +38,26 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
       const response = await fetch('/api/avito-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, user_id: userId })
+        body: JSON.stringify({ 
+          user_id: userId,
+          client_id: values.client_id,
+          client_secret: values.client_secret,
+          access_token: values.access_token || null,
+          is_connected: true
+        })
       });
 
       if (response.ok) {
+        const data = await response.json();
+        setSettings(data);
         message.success('Настройки сохранены');
         loadSettings();
       } else {
-        message.error('Ошибка сохранения настроек');
+        const errorData = await response.json();
+        message.error(errorData.error || 'Ошибка сохранения настроек');
       }
     } catch (error) {
+      console.error('Ошибка:', error);
       message.error('Ошибка сохранения настроек');
     } finally {
       setLoading(false);
@@ -72,11 +82,12 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
         message.success('Подключение успешно');
         
         // Автоматически сохраняем токен
-        form.setFieldValue('access_token', data.access_token);
-        await handleSave({
+        const updatedValues = {
           ...values,
           access_token: data.access_token
-        });
+        };
+        form.setFieldsValue(updatedValues);
+        await handleSave(updatedValues);
       } else {
         const errorData = await response.json();
         message.error(errorData.error || 'Ошибка подключения к API Авито');
@@ -97,7 +108,7 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
           user_id: userId,
           client_id: '',
           client_secret: '',
-          access_token: '',
+          access_token: null,
           is_connected: false
         })
       });
