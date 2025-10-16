@@ -26,6 +26,9 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
         const data = await response.json();
         setSettings(data);
         form.setFieldsValue(data);
+      } else if (response.status === 404) {
+        // Настройки не найдены - это нормально
+        setSettings(null);
       }
     } catch (error) {
       console.error('Ошибка загрузки настроек:', error);
