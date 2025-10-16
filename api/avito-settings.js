@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       res.json(result.rows[0]);
     } catch (error) {
       console.error('Ошибка получения настроек:', error);
-      res.status(500).json({ error: 'Ошибка сервера' });
+      return res.status(500).json({ error: 'Ошибка сервера' });
     }
   } else if (req.method === 'POST') {
     const { user_id, client_id, client_secret, access_token, refresh_token, is_connected } = req.body;
@@ -53,7 +53,7 @@ export default async function handler(req, res) {
       res.json(result.rows[0]);
     } catch (error) {
       console.error('Ошибка сохранения настроек:', error);
-      res.status(500).json({ error: 'Ошибка сервера' });
+      return res.status(500).json({ error: 'Ошибка сервера' });
     }
   } else {
     res.setHeader('Allow', ['GET', 'POST']);
