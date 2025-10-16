@@ -34,7 +34,7 @@ export default async function handler(req, res) {
         client_id: settings.client_id,
         client_secret: settings.client_secret,
         code: code,
-        redirect_uri: `${req.headers.origin}/api/avito-callback`
+        redirect_uri: 'https://myrentology.ru/api/avito-callback'
       })
     });
 
