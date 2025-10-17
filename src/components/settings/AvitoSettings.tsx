@@ -21,7 +21,7 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
 
   const loadSettings = async () => {
     try {
-      const response = await fetch(`https://rental-crm-frontend-9rxdfznn9-sw37bks-projects.vercel.app/api/avito-settings?userId=${userId}`);
+      const response = await fetch(`/api/avito-settings?userId=${userId}`);
       if (response.ok) {
         const data = await response.json();
         setSettings(data);
@@ -45,7 +45,7 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
   const handleSave = async (values: any) => {
     setLoading(true);
     try {
-      const response = await fetch('https://rental-crm-frontend-9rxdfznn9-sw37bks-projects.vercel.app/api/avito-settings', {
+      const response = await fetch('/api/avito-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -109,7 +109,7 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
 
   const handleDisconnect = async () => {
     try {
-      const response = await fetch('https://rental-crm-frontend-9rxdfznn9-sw37bks-projects.vercel.app/api/avito-settings', {
+      const response = await fetch('/api/avito-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
