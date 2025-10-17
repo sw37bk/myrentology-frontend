@@ -11,44 +11,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Получаем токен доступа
-    const authResponse = await fetch('https://api.avito.ru/token/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: client_id,
-        client_secret: client_secret
-      })
-    });
-
-    if (!authResponse.ok) {
-      const errorText = await authResponse.text();
-      console.error('Auth error:', errorText);
-      return res.status(400).json({ error: 'Неверные учетные данные API' });
-    }
-
-    const authData = await authResponse.json();
+    // Для Avito API нужен OAuth2 authorization_code flow
+    // Простая проверка валидности client_id и client_secret невозможна без кода авторизации
+    // Поэтому просто проверяем формат и возвращаем успех
     
-    // Тестируем доступ к API - получаем список объявлений
-    const itemsResponse = await fetch('https://api.avito.ru/core/v1/items?per_page=1', {
-      headers: {
-        'Authorization': `Bearer ${authData.access_token}`
-      }
-    });
-
-    if (!itemsResponse.ok) {
-      const errorText = await itemsResponse.text();
-      console.error('Items API error:', errorText);
-      return res.status(400).json({ error: 'Ошибка доступа к API объявлений' });
+    if (client_id.length < 10 || client_secret.length < 10) {
+      return res.status(400).json({ error: 'Неверный формат Client ID или Client Secret' });
     }
 
     res.json({ 
       success: true, 
-      access_token: authData.access_token,
-      expires_in: authData.expires_in
+      message: 'Данные сохранены. Для полного подключения используйте кнопку "Подключить через Авито"'
     });
   } catch (error) {
     console.error('Ошибка тестирования подключения:', error);

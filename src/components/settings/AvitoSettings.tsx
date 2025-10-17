@@ -187,13 +187,17 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
                 htmlType="submit"
                 loading={loading}
               >
-                {settings?.is_connected ? 'Обновить настройки' : 'Подключить'}
+                Сохранить настройки
               </Button>
-              <Button 
-                onClick={startOAuthFlow}
-              >
-                Подключить через Авито
-              </Button>
+              {!settings?.is_connected && (
+                <Button 
+                  type="default"
+                  onClick={startOAuthFlow}
+                  icon={<ApiOutlined />}
+                >
+                  Подключить через Авито
+                </Button>
+              )}
             </Space>
           </Form.Item>
         </Form>
