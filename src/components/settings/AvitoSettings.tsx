@@ -29,9 +29,16 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
       } else if (response.status === 404) {
         // Настройки не найдены - это нормально
         setSettings(null);
+        form.resetFields();
+      } else {
+        console.error('Ошибка API:', response.status, response.statusText);
+        setSettings(null);
+        form.resetFields();
       }
     } catch (error) {
       console.error('Ошибка загрузки настроек:', error);
+      setSettings(null);
+      form.resetFields();
     }
   };
 
@@ -139,7 +146,7 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
           <li>Мы автоматически настроим получение сообщений</li>
         </ol>
 
-        {settings?.is_connected && (
+        {settings?.is_connected ? (
           <Alert
             message="Интеграция активна"
             description={`Последняя синхронизация: ${settings.last_sync ? new Date(settings.last_sync).toLocaleString('ru-RU') : 'никогда'}`}
@@ -155,6 +162,14 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
                 Отключить
               </Button>
             }
+          />
+        ) : (
+          <Alert
+            message="Интеграция не настроена"
+            description="Введите ваши ключи API и нажмите 'Подключить через Авито'"
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
           />
         )}
 
