@@ -72,7 +72,30 @@ export const useAuthStore = create<AuthState>((set) => ({
   checkAuth: () => {
     const token = localStorage.getItem('auth_token');
     if (token) {
-      set({ isAuthenticated: true, isLoading: false });
+      // Восстанавливаем пользователя по токену
+      if (token === 'admin_token') {
+        const adminUser = {
+          id: 999,
+          email: 'admin@rentologiya.ru',
+          phone: '+78001234567',
+          subscription_tier: 'pro' as const,
+          subscription_end: '2099-12-31',
+          role: 'admin' as const
+        };
+        set({ user: adminUser, isAuthenticated: true, isLoading: false });
+      } else if (token === 'demo_token') {
+        const demoUser = {
+          id: 1,
+          email: 'user@example.com',
+          phone: '+7 999 123-45-67',
+          subscription_tier: 'basic' as const,
+          subscription_end: '2024-12-31',
+          role: 'user' as const
+        };
+        set({ user: demoUser, isAuthenticated: true, isLoading: false });
+      } else {
+        set({ isAuthenticated: true, isLoading: false });
+      }
     } else {
       set({ isAuthenticated: false, isLoading: false });
     }

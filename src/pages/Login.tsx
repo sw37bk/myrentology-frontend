@@ -105,20 +105,7 @@ export const Login: React.FC = () => {
           </Form.Item>
         </Form>
 
-        <div style={{ 
-          textAlign: 'center', 
-          color: '#666', 
-          marginTop: 24,
-          padding: 16,
-          background: '#f9f9f9',
-          borderRadius: 6
-        }}>
-          <Text strong>Демо доступ:</Text>
-          <div style={{ marginTop: 8 }}>
-            <div>Админ: <Text code>admin@rentologiya.ru</Text> / <Text code>admin</Text></div>
-            <div>Пользователь: <Text code>user@example.com</Text> / <Text code>password</Text></div>
-          </div>
-        </div>
+
       </Card>
     </div>
   );
