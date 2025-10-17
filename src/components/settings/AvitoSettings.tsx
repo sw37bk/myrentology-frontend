@@ -49,11 +49,11 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          user_id: userId,
-          client_id: values.client_id,
-          client_secret: values.client_secret,
-          access_token: values.access_token || null,
-          is_connected: true
+          userId: userId,
+          clientId: values.client_id,
+          clientSecret: values.client_secret,
+          accessToken: values.access_token || null,
+          isActive: true
         })
       });
 
@@ -113,11 +113,11 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          user_id: userId,
-          client_id: '',
-          client_secret: '',
-          access_token: null,
-          is_connected: false
+          userId: userId,
+          clientId: '',
+          clientSecret: '',
+          accessToken: null,
+          isActive: false
         })
       });
 
@@ -146,10 +146,10 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
           <li>Мы автоматически настроим получение сообщений</li>
         </ol>
 
-        {settings?.is_connected ? (
+        {settings?.isConnected ? (
           <Alert
             message="Интеграция активна"
-            description={`Последняя синхронизация: ${settings.last_sync ? new Date(settings.last_sync).toLocaleString('ru-RU') : 'никогда'}`}
+            description={`Последняя синхронизация: ${settings.lastSync ? new Date(settings.lastSync).toLocaleString('ru-RU') : 'никогда'}`}
             type="success"
             showIcon
             style={{ marginBottom: 16 }}
@@ -204,7 +204,7 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
               >
                 Сохранить настройки
               </Button>
-              {!settings?.is_connected && (
+              {!settings?.isConnected && (
                 <Button 
                   type="default"
                   onClick={startOAuthFlow}
