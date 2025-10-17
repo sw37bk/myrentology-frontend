@@ -10,7 +10,6 @@ export default async function handler(req, res) {
   }
   
   try {
-    // Тестируем подключение к API Avito
     const response = await fetch('https://api.avito.ru/token', {
       method: 'POST',
       headers: {
@@ -25,23 +24,12 @@ export default async function handler(req, res) {
     
     if (response.ok) {
       const data = await response.json();
-      return res.json({ 
-        success: true, 
-        message: 'Подключение успешно',
-        token_type: data.token_type,
-        expires_in: data.expires_in
-      });
+      return res.json(data);
     } else {
       const error = await response.json();
-      return res.status(400).json({ 
-        success: false, 
-        error: error.error_description || 'Неверные учетные данные' 
-      });
+      return res.status(400).json(error);
     }
   } catch (error) {
-    return res.status(500).json({ 
-      success: false, 
-      error: 'Ошибка подключения к API Avito' 
-    });
+    return res.status(500).json({ error: 'Failed to get access token' });
   }
 }
