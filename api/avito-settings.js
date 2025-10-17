@@ -1,5 +1,6 @@
 const { dbApi } = require('./db');
 
+// Updated: 2025-10-17 - Fixed data mapping
 export default async function handler(req, res) {
   const { method } = req;
   
