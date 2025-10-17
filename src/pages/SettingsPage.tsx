@@ -13,7 +13,7 @@ export const SettingsPage: React.FC = () => {
     <Card title={<><SettingOutlined /> Настройки</>}>
       <Row gutter={[16, 16]}>
         <Col span={24}>
-          <AvitoSettings userId={user?.id || 0} />
+          <AvitoSettings userId={user?.id || 999} />
         </Col>
         <Col span={12}>
           <TelegramLink />
