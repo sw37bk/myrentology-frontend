@@ -16,7 +16,21 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'Settings not found' });
       }
       
-      return res.json(settings);
+      // Маппинг для совместимости с фронтендом
+      const mappedSettings = {
+        id: settings.id,
+        userId: settings.user_id,
+        clientId: settings.client_id,
+        clientSecret: settings.client_secret,
+        accessToken: settings.access_token,
+        refreshToken: settings.refresh_token,
+        isConnected: settings.is_connected,
+        lastSync: settings.last_sync,
+        createdAt: settings.created_at,
+        updatedAt: settings.updated_at
+      };
+      
+      return res.json(mappedSettings);
     } catch (error) {
       console.error('Database error:', error);
       return res.status(500).json({ error: 'Database error' });
@@ -37,7 +51,21 @@ export default async function handler(req, res) {
         is_connected: isActive !== false
       });
       
-      return res.json(settings);
+      // Маппинг для совместимости с фронтендом
+      const mappedSettings = {
+        id: settings.id,
+        userId: settings.user_id,
+        clientId: settings.client_id,
+        clientSecret: settings.client_secret,
+        accessToken: settings.access_token,
+        refreshToken: settings.refresh_token,
+        isConnected: settings.is_connected,
+        lastSync: settings.last_sync,
+        createdAt: settings.created_at,
+        updatedAt: settings.updated_at
+      };
+      
+      return res.json(mappedSettings);
     } catch (error) {
       console.error('Database error:', error);
       return res.status(500).json({ error: 'Database error' });
