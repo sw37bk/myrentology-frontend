@@ -20,7 +20,7 @@ async function initDatabase() {
     await sql`
       CREATE TABLE IF NOT EXISTS avito_settings (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id),
+        user_id INTEGER REFERENCES users(id) UNIQUE,
         client_id VARCHAR(255) NOT NULL,
         client_secret VARCHAR(255) NOT NULL,
         access_token VARCHAR(500),
@@ -28,7 +28,8 @@ async function initDatabase() {
         token_expires TIMESTAMP,
         is_connected BOOLEAN DEFAULT false,
         last_sync TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
 
@@ -116,17 +117,30 @@ const dbApi = {
 
   // Настройки Авито
   async saveAvitoSettings(userId, settings) {
-    const result = await sql`
-      INSERT INTO avito_settings (user_id, client_id, client_secret, is_connected)
-      VALUES (${userId}, ${settings.client_id}, ${settings.client_secret}, ${settings.is_connected})
-      ON CONFLICT (user_id) 
-      DO UPDATE SET 
-        client_id = ${settings.client_id},
-        client_secret = ${settings.client_secret},
-        is_connected = ${settings.is_connected}
-      RETURNING *
-    `;
-    return result.rows[0];
+    // Сначала проверяем, есть ли запись
+    const existing = await sql`SELECT id FROM avito_settings WHERE user_id = ${userId}`;
+    
+    if (existing.rows.length > 0) {
+      // Обновляем существующую
+      const result = await sql`
+        UPDATE avito_settings 
+        SET client_id = ${settings.client_id}, 
+            client_secret = ${settings.client_secret}, 
+            is_connected = ${settings.is_connected},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = ${userId}
+        RETURNING *
+      `;
+      return result.rows[0];
+    } else {
+      // Создаем новую
+      const result = await sql`
+        INSERT INTO avito_settings (user_id, client_id, client_secret, is_connected)
+        VALUES (${userId}, ${settings.client_id}, ${settings.client_secret}, ${settings.is_connected})
+        RETURNING *
+      `;
+      return result.rows[0];
+    }
   },
 
   async getAvitoSettings(userId) {

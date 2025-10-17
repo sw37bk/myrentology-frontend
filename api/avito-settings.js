@@ -1,5 +1,4 @@
-// Хранилище настроек Avito (в production использовать базу данных)
-const avitoSettings = new Map();
+const { dbApi } = require('./db');
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -11,12 +10,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'userId is required' });
     }
     
-    const settings = avitoSettings.get(userId);
-    if (!settings) {
-      return res.status(404).json({ error: 'Settings not found' });
+    try {
+      const settings = await dbApi.getAvitoSettings(userId);
+      if (!settings) {
+        return res.status(404).json({ error: 'Settings not found' });
+      }
+      
+      return res.json(settings);
+    } catch (error) {
+      console.error('Database error:', error);
+      return res.status(500).json({ error: 'Database error' });
     }
-    
-    return res.json(settings);
   }
   
   if (method === 'POST') {
@@ -26,20 +30,18 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     
-    const settings = {
-      id: Date.now(),
-      userId,
-      clientId,
-      clientSecret,
-      webhookUrl: webhookUrl || `${req.headers.origin}/api/avito-webhook`,
-      isActive: isActive !== false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    avitoSettings.set(userId, settings);
-    
-    return res.json(settings);
+    try {
+      const settings = await dbApi.saveAvitoSettings(userId, {
+        client_id: clientId,
+        client_secret: clientSecret,
+        is_connected: isActive !== false
+      });
+      
+      return res.json(settings);
+    } catch (error) {
+      console.error('Database error:', error);
+      return res.status(500).json({ error: 'Database error' });
+    }
   }
   
   res.status(405).json({ error: 'Method not allowed' });
