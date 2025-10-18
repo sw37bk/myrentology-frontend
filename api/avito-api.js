@@ -1,4 +1,4 @@
-import { avitoTokens } from './avito-callback.js';
+
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,7 +12,8 @@ export default async function handler(req, res) {
   }
 
   // Получаем токен пользователя
-  const userToken = avitoTokens[user_id];
+  if (!global.avitoTokens) global.avitoTokens = {};
+  const userToken = global.avitoTokens[user_id];
   if (!userToken) {
     return res.status(401).json({ error: 'Пользователь не авторизован в Avito' });
   }
@@ -36,7 +37,7 @@ export default async function handler(req, res) {
 
       if (refreshResponse.ok) {
         const newTokenData = await refreshResponse.json();
-        avitoTokens[user_id] = {
+        global.avitoTokens[user_id] = {
           ...userToken,
           access_token: newTokenData.access_token,
           refresh_token: newTokenData.refresh_token || userToken.refresh_token,
@@ -55,7 +56,7 @@ export default async function handler(req, res) {
     const apiResponse = await fetch(`https://api.avito.ru${endpoint}`, {
       method: method,
       headers: {
-        'Authorization': `Bearer ${avitoTokens[user_id].access_token}`,
+        'Authorization': `Bearer ${global.avitoTokens[user_id].access_token}`,
         'Content-Type': 'application/json'
       },
       body: data ? JSON.stringify(data) : undefined

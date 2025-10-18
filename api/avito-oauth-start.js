@@ -1,5 +1,7 @@
 // Хранилище для state и ключей
-let oauthStates = {};
+if (!global.oauthStates) {
+  global.oauthStates = {};
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -15,7 +17,7 @@ export default async function handler(req, res) {
   try {
     // Сохраняем ключи для OAuth
     const state = Math.random().toString(36).substring(7);
-    oauthStates[state] = {
+    global.oauthStates[state] = {
       client_id,
       client_secret,
       user_id,
@@ -39,4 +41,3 @@ export default async function handler(req, res) {
   }
 }
 
-export { oauthStates };

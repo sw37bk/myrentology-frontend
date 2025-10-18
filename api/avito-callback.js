@@ -1,5 +1,7 @@
 // Временное хранилище токенов
-let avitoTokens = {};
+if (!global.avitoTokens) {
+  global.avitoTokens = {};
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -27,7 +29,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Получаем данные OAuth из state (нужно реализовать хранилище)
+    // Получаем данные OAuth из state
     const oauthData = global.oauthStates?.[state];
     if (!oauthData) {
       throw new Error('Invalid state');
@@ -52,7 +54,7 @@ export default async function handler(req, res) {
       const tokenData = await tokenResponse.json();
       
       // Сохраняем токен для пользователя
-      avitoTokens[oauthData.user_id] = {
+      global.avitoTokens[oauthData.user_id] = {
         access_token: tokenData.access_token,
         refresh_token: tokenData.refresh_token,
         expires_at: Date.now() + (tokenData.expires_in * 1000),
@@ -104,4 +106,3 @@ export default async function handler(req, res) {
   }
 }
 
-export { avitoTokens };

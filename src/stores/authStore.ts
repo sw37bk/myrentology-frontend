@@ -40,7 +40,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   checkAuth: () => {
+    // Принудительно очищаем старые токены
     const token = localStorage.getItem('auth_token');
+    if (token === 'admin_token' || token === 'demo_token') {
+      localStorage.removeItem('auth_token');
+      set({ user: null, isAuthenticated: false, isLoading: false });
+      return;
+    }
+    
     if (token) {
       set({ isAuthenticated: true, isLoading: false });
     } else {
