@@ -74,37 +74,60 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
     }
   };
 
-  const startOAuthFlow = () => {
+  const startOAuthFlow = async () => {
     const values = form.getFieldsValue();
-    if (!values.client_id) {
-      message.error('Введите Client ID');
+    if (!values.client_id || !values.client_secret) {
+      message.error('Введите Client ID и Client Secret');
       return;
     }
 
-    const scopes = 'messenger:read,messenger:write,items:info,stats:read';
-    const redirectUri = 'https://myrentology.ru';
-    const state = Math.random().toString(36).substring(7);
-    
-    localStorage.setItem('avito_oauth_state', state);
-    localStorage.setItem('avito_oauth_user_id', userId.toString());
-    
-    const authUrl = `https://avito.ru/oauth?response_type=code&client_id=${values.client_id}&scope=${scopes}&state=${state}&redirect_uri=${encodeURIComponent(redirectUri)}`;
-    
-    window.open(authUrl, 'avitoAuth', 'width=600,height=700');
-    
-    // Прослушиваем сообщения от popup
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'AVITO_AUTH_SUCCESS') {
-        message.success('Подключение успешно!');
-        loadSettings();
-        window.removeEventListener('message', handleMessage);
-      } else if (event.data.type === 'AVITO_AUTH_ERROR') {
-        message.error('Ошибка авторизации');
-        window.removeEventListener('message', handleMessage);
+    try {
+      // Начинаем OAuth flow
+      const response = await fetch('/api/avito-oauth-start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: values.client_id,
+          client_secret: values.client_secret,
+          user_id: userId
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Открываем popup с URL авторизации
+        const popup = window.open(data.auth_url, 'avitoAuth', 'width=600,height=700');
+        
+        // Прослушиваем сообщения от popup
+        const handleMessage = (event: MessageEvent) => {
+          if (event.data.type === 'AVITO_AUTH_SUCCESS') {
+            message.success('Подключение успешно!');
+            loadSettings();
+            window.removeEventListener('message', handleMessage);
+          } else if (event.data.type === 'AVITO_AUTH_ERROR') {
+            message.error(`Ошибка авторизации: ${event.data.error || 'Неизвестная ошибка'}`);
+            window.removeEventListener('message', handleMessage);
+          }
+        };
+        
+        window.addEventListener('message', handleMessage);
+        
+        // Проверяем, что popup не закрылся
+        const checkClosed = setInterval(() => {
+          if (popup?.closed) {
+            clearInterval(checkClosed);
+            window.removeEventListener('message', handleMessage);
+          }
+        }, 1000);
+      } else {
+        const errorData = await response.json();
+        message.error(errorData.error || 'Ошибка создания OAuth URL');
       }
-    };
-    
-    window.addEventListener('message', handleMessage);
+    } catch (error) {
+      console.error('OAuth start error:', error);
+      message.error('Ошибка начала авторизации');
+    }
   };
 
   const handleDisconnect = async () => {
