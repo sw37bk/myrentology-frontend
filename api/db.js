@@ -115,6 +115,11 @@ const dbApi = {
     return result.rows[0];
   },
 
+  async getUserByEmail(email) {
+    const result = await sql`SELECT * FROM users WHERE email = ${email}`;
+    return result.rows[0];
+  },
+
   // Настройки Авито
   async saveAvitoSettings(userId, settings) {
     // Сначала проверяем, есть ли запись
