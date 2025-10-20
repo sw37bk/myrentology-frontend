@@ -1,77 +1,46 @@
-const { dbApi } = require('./db');
+// Временное хранилище в памяти
+if (!global.avitoSettings) {
+  global.avitoSettings = {};
+}
 
-// Updated: 2025-10-17 - Fixed data mapping
 export default async function handler(req, res) {
-  const { method } = req;
-  
-  if (method === 'GET') {
-    const userId = parseInt(req.query.userId);
+  if (req.method === 'GET') {
+    const userId = req.query.userId || req.query.user_id;
     
     if (!userId) {
-      return res.status(400).json({ error: 'userId is required' });
+      return res.status(400).json({ error: 'userId обязателен' });
     }
     
-    try {
-      const settings = await dbApi.getAvitoSettings(userId);
-      if (!settings) {
-        return res.status(404).json({ error: 'Settings not found' });
-      }
-      
-      // Маппинг для совместимости с фронтендом
-      const mappedSettings = {
-        id: settings.id,
-        userId: settings.user_id,
-        clientId: settings.client_id,
-        clientSecret: settings.client_secret,
-        accessToken: settings.access_token,
-        refreshToken: settings.refresh_token,
-        isConnected: settings.is_connected,
-        lastSync: settings.last_sync,
-        createdAt: settings.created_at,
-        updatedAt: settings.updated_at
-      };
-      
-      return res.json(mappedSettings);
-    } catch (error) {
-      console.error('Database error:', error);
-      return res.status(500).json({ error: 'Database error' });
+    const settings = global.avitoSettings[userId];
+    if (!settings) {
+      return res.status(404).json({ error: 'Настройки не найдены' });
     }
+    
+    res.json(settings);
+  } else if (req.method === 'POST') {
+    const { user_id, client_id, client_secret, access_token, refresh_token, is_connected } = req.body;
+    
+    if (!user_id || !client_id || !client_secret) {
+      return res.status(400).json({ error: 'Обязательные поля: user_id, client_id, client_secret' });
+    }
+    
+    const settings = {
+      id: 1,
+      user_id,
+      client_id,
+      client_secret,
+      access_token: access_token || null,
+      refresh_token: refresh_token || null,
+      is_connected: is_connected !== false,
+      last_sync: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    global.avitoSettings[user_id] = settings;
+    res.json(settings);
+  } else {
+    res.setHeader('Allow', ['GET', 'POST']);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
-  
-  if (method === 'POST') {
-    const { userId, clientId, clientSecret, webhookUrl, isActive } = req.body;
-    
-    if (!userId || !clientId || !clientSecret) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-    
-    try {
-      const settings = await dbApi.saveAvitoSettings(userId, {
-        client_id: clientId,
-        client_secret: clientSecret,
-        is_connected: isActive !== false
-      });
-      
-      // Маппинг для совместимости с фронтендом
-      const mappedSettings = {
-        id: settings.id,
-        userId: settings.user_id,
-        clientId: settings.client_id,
-        clientSecret: settings.client_secret,
-        accessToken: settings.access_token,
-        refreshToken: settings.refresh_token,
-        isConnected: settings.is_connected,
-        lastSync: settings.last_sync,
-        createdAt: settings.created_at,
-        updatedAt: settings.updated_at
-      };
-      
-      return res.json(mappedSettings);
-    } catch (error) {
-      console.error('Database error:', error);
-      return res.status(500).json({ error: 'Database error' });
-    }
-  }
-  
-  res.status(405).json({ error: 'Method not allowed' });
 }
