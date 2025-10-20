@@ -1,4 +1,4 @@
-
+// Auth service v1.0.1 - Fixed API endpoint
 
 interface LoginData {
   email: string;
