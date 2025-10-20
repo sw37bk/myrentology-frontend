@@ -1,4 +1,4 @@
-const { sql } = require('@vercel/postgres');
+import { sql } from '@vercel/postgres';
 
 // Создание таблиц при первом запуске
 async function initDatabase() {
@@ -214,4 +214,4 @@ const dbApi = {
   }
 };
 
-module.exports = { initDatabase, dbApi };
+export { initDatabase, dbApi };
