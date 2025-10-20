@@ -19,12 +19,21 @@ export interface AuthResponse {
 
 export const authApi = {
   login: async (data: LoginData): Promise<AuthResponse> => {
-    const response = await api.post('/auth/login/', data);
-    return response.data;
+    const response = await fetch('/api/auth-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Authentication failed');
+    }
+    
+    return await response.json();
   },
 
   logout: async (): Promise<void> => {
-    await api.post('/auth/logout/');
     localStorage.removeItem('auth_token');
   },
 };

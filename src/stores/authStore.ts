@@ -20,20 +20,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: async (data: { email: string; password: string }) => {
     try {
-      const response = await fetch('/api/auth-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Ошибка авторизации');
-      }
-      
-      const result = await response.json();
-      localStorage.setItem('auth_token', result.token);
-      set({ user: result.user, isAuthenticated: true });
+      const response = await authApi.login(data);
+      localStorage.setItem('auth_token', response.token);
+      set({ user: response.user, isAuthenticated: true });
     } catch (error) {
       throw error;
     }
