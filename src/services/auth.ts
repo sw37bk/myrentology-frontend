@@ -1,4 +1,4 @@
-import { api } from './api';
+
 
 interface LoginData {
   email: string;
