@@ -19,28 +19,23 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
 
   login: async (data: { email: string; password: string }) => {
-    try {
-      // Админ вход
-      if (data.email === 'sw37@bk.ru' && data.password === 'Xw6Nfbhz#') {
-        const adminUser = {
-          id: 999,
-          email: 'sw37@bk.ru',
-          phone: '+78001234567',
-          subscription_tier: 'pro' as const,
-          subscription_end: '2099-12-31',
-          role: 'admin' as const
-        };
-        localStorage.setItem('auth_token', 'admin_token');
-        set({ user: adminUser, isAuthenticated: true });
-        return;
-      }
-      
-      const response = await authApi.login(data);
-      localStorage.setItem('auth_token', response.token);
-      set({ user: response.user, isAuthenticated: true });
-    } catch (error) {
-      throw error;
+    // Админ вход
+    if (data.email === 'sw37@bk.ru' && data.password === 'Xw6Nfbhz#') {
+      const adminUser = {
+        id: 999,
+        email: 'sw37@bk.ru',
+        phone: '+78001234567',
+        subscription_tier: 'pro' as const,
+        subscription_end: '2099-12-31',
+        role: 'admin' as const
+      };
+      localStorage.setItem('auth_token', 'admin_token');
+      set({ user: adminUser, isAuthenticated: true });
+      return;
     }
+    
+    // Для всех остальных - ошибка
+    throw new Error('Неверные данные для входа');
   },
 
   logout: async () => {
