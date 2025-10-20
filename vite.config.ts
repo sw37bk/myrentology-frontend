@@ -9,9 +9,9 @@ export default defineConfig({
     minify: 'esbuild',
     rollupOptions: {
       output: {
-        entryFileNames: `[name]-[hash]-${Date.now()}.js`,
-        chunkFileNames: `[name]-[hash]-${Date.now()}.js`,
-        assetFileNames: `[name]-[hash]-${Date.now()}.[ext]`
+        entryFileNames: `[name]-[hash]-1760971000.js`,
+        chunkFileNames: `[name]-[hash]-1760971000.js`,
+        assetFileNames: `[name]-[hash]-1760971000.[ext]`
       }
     }
   },
