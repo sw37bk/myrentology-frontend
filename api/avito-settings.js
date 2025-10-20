@@ -1,4 +1,4 @@
-// Временное хранилище настроек
+// Avito Settings API v2.0
 const avitoSettings = new Map();
 
 export default async function handler(req, res) {
