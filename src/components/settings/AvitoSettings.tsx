@@ -184,43 +184,15 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
               >
                 Сохранить настройки
               </Button>
-              <Button 
-                type="default"
-                onClick={async () => {
-                  const values = form.getFieldsValue();
-                  if (!values.client_id || !values.client_secret) {
-                    message.error('Введите Client ID и Client Secret');
-                    return;
-                  }
-                  
-                  setTestingConnection(true);
-                  try {
-                    const response = await fetch('/api/avito-test-connection', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ 
-                        client_id: values.client_id, 
-                        client_secret: values.client_secret 
-                      })
-                    });
-                    
-                    if (response.ok) {
-                      message.success('Подключение к Avito API успешно!');
-                    } else {
-                      const error = await response.json();
-                      message.error(error.error || 'Ошибка подключения к Avito API');
-                    }
-                  } catch (error) {
-                    message.error('Ошибка тестирования подключения');
-                  } finally {
-                    setTestingConnection(false);
-                  }
-                }}
-                loading={testingConnection}
-                icon={<ApiOutlined />}
-              >
-                Тест подключения
-              </Button>
+              {!settings?.is_connected && (
+                <Button 
+                  type="default"
+                  onClick={startOAuthFlow}
+                  icon={<ApiOutlined />}
+                >
+                  Подключить через Авито
+                </Button>
+              )}
             </Space>
           </Form.Item>
         </Form>
