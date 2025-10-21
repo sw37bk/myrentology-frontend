@@ -46,7 +46,7 @@ export default async function handler(req, res) {
         client_id: oauthData.client_id,
         client_secret: oauthData.client_secret,
         code: code,
-        redirect_uri: `${req.headers.origin || 'https://myrentology.ru'}/api/avito-callback`
+        redirect_uri: `${req.headers.origin || 'https://рентология.рф'}/api/avito-callback`
       })
     });
     
@@ -63,7 +63,7 @@ export default async function handler(req, res) {
       };
       
       // Обновляем настройки
-      await fetch(`${req.headers.origin || 'https://myrentology.ru'}/api/avito-settings`, {
+      await fetch(`${req.headers.origin || 'https://рентология.рф'}/api/avito-settings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

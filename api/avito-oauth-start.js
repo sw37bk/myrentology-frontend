@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
     // Генерируем URL для авторизации
     const scopes = 'messenger:read,messenger:write,items:info,stats:read';
-    const redirectUri = `${req.headers.origin || 'https://myrentology.ru'}/api/avito-callback`;
+    const redirectUri = `${req.headers.origin || 'https://рентология.рф'}/api/avito-callback`;
     
     const authUrl = `https://avito.ru/oauth?response_type=code&client_id=${client_id}&scope=${scopes}&state=${state}&redirect_uri=${encodeURIComponent(redirectUri)}`;
     
