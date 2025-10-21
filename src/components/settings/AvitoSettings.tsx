@@ -21,7 +21,7 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
 
   const loadSettings = async () => {
     try {
-      const response = await fetch(`/api/avito-config?userId=${userId}`);
+      const response = await fetch(`/api/avito-settings?userId=${userId}`);
       if (response.ok) {
         const data = await response.json();
         setSettings(data);
@@ -44,15 +44,15 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
   const handleSave = async (values: any) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/avito-config', {
+      const response = await fetch('/api/avito-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          userId: userId,
-          clientId: values.client_id,
-          clientSecret: values.client_secret,
-          accessToken: values.access_token || null,
-          isActive: true
+          user_id: userId,
+          client_id: values.client_id,
+          client_secret: values.client_secret,
+          access_token: values.access_token || null,
+          is_connected: true
         })
       });
 
@@ -75,15 +75,15 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
 
   const handleDisconnect = async () => {
     try {
-      const response = await fetch('/api/avito-config', {
+      const response = await fetch('/api/avito-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          userId: userId,
-          clientId: '',
-          clientSecret: '',
-          accessToken: null,
-          isActive: false
+          user_id: userId,
+          client_id: '',
+          client_secret: '',
+          access_token: null,
+          is_connected: false
         })
       });
 
