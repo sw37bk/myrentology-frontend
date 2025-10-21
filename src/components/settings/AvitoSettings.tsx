@@ -73,6 +73,50 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
     }
   };
 
+  const startOAuthFlow = async () => {
+    const values = form.getFieldsValue();
+    if (!values.client_id || !values.client_secret) {
+      message.error('Введите Client ID и Client Secret');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/avito-oauth-start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: values.client_id,
+          client_secret: values.client_secret,
+          user_id: userId
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const popup = window.open(data.auth_url, 'avitoAuth', 'width=600,height=700');
+        
+        const handleMessage = (event: MessageEvent) => {
+          if (event.data.type === 'AVITO_AUTH_SUCCESS') {
+            message.success('Подключение успешно!');
+            loadSettings();
+            window.removeEventListener('message', handleMessage);
+          } else if (event.data.type === 'AVITO_AUTH_ERROR') {
+            message.error(`Ошибка авторизации: ${event.data.error || 'Неизвестная ошибка'}`);
+            window.removeEventListener('message', handleMessage);
+          }
+        };
+        
+        window.addEventListener('message', handleMessage);
+      } else {
+        const errorData = await response.json();
+        message.error(errorData.error || 'Ошибка создания OAuth URL');
+      }
+    } catch (error) {
+      console.error('OAuth start error:', error);
+      message.error('Ошибка начала авторизации');
+    }
+  };
+
   const handleDisconnect = async () => {
     try {
       const response = await fetch('/api/avito-settings', {
