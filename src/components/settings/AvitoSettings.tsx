@@ -112,10 +112,16 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
           <li>Мы автоматически настроим получение сообщений</li>
         </ol>
 
-        {settings?.isConnected ? (
+        {settings?.is_connected && settings?.access_token ? (
           <Alert
-            message="Интеграция активна"
-            description={`Последняя синхронизация: ${settings.lastSync ? new Date(settings.lastSync).toLocaleString('ru-RU') : 'никогда'}`}
+            message="✅ Авито успешно подключено!"
+            description={
+              <div>
+                <div>• Client ID: {settings.client_id}</div>
+                <div>• Последняя синхронизация: {settings.last_sync ? new Date(settings.last_sync).toLocaleString('ru-RU') : 'никогда'}</div>
+                <div>• Статус: Активно</div>
+              </div>
+            }
             type="success"
             showIcon
             style={{ marginBottom: 16 }}
@@ -129,11 +135,19 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
               </Button>
             }
           />
+        ) : settings?.client_id ? (
+          <Alert
+            message="⚠️ Настройки сохранены, но не подключено"
+            description="Ключи API сохранены, но нужно завершить авторизацию через Авито"
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
         ) : (
           <Alert
-            message="Интеграция не настроена"
-            description="Введите ваши ключи API и нажмите 'Подключить через Авито'"
-            type="info"
+            message="❌ Авито не подключено"
+            description="Введите ваши ключи API и нажмите 'Тест подключения'"
+            type="error"
             showIcon
             style={{ marginBottom: 16 }}
           />
