@@ -228,7 +228,7 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
               >
                 Сохранить настройки
               </Button>
-              {!settings?.is_connected && (
+              {(!settings?.access_token && settings?.client_id) && (
                 <Button 
                   type="default"
                   onClick={startOAuthFlow}
