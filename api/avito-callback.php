@@ -43,12 +43,11 @@ try {
         'grant_type' => 'authorization_code',
         'client_id' => $oauth_info['client_id'],
         'client_secret' => $oauth_info['client_secret'],
-        'code' => $code,
-        'redirect_uri' => 'https://рентология.рф/api/avito-callback'
+        'code' => $code
     ];
     
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://api.avito.ru/token');
+    curl_setopt($ch, CURLOPT_URL, 'https://api.avito.ru/token/');
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($token_data));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

@@ -54,7 +54,7 @@ file_put_contents($oauth_file, json_encode($oauth_data));
 
 // Генерируем URL авторизации
 $scopes = 'messenger:read,messenger:write,items:info,stats:read';
-$redirect_uri = 'https://рентология.рф/api/avito-callback';
+$redirect_uri = 'http://xn--c1adkkjgblu9k.xn--p1ai/api/avito-callback/';
 $auth_url = 'https://avito.ru/oauth?' . http_build_query([
     'response_type' => 'code',
     'client_id' => $client_id,
