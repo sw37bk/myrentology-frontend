@@ -20,6 +20,9 @@ if (!$email || !$password) {
     exit;
 }
 
+// Отладка
+error_log("Login attempt: email='$email', password='$password'");
+
 // Проверяем тестовый аккаунт
 if ($email === 'sw37@bk.ru' && $password === 'Xw6Nfbhz') {
     echo json_encode([
