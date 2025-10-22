@@ -1,12 +1,17 @@
 RewriteEngine On
 
+# API перенаправления на PHP файлы
+RewriteRule ^api/auth/login$ api/auth/login.php [L]
+RewriteRule ^api/avito-settings$ api/avito-settings.php [L]
+
 # Отключаем статистику reg.ru для JS файлов
 RewriteCond %{REQUEST_URI} \.(js|css)$ [NC]
 RewriteRule .* - [E=nolog:1]
 
-# SPA роутинг
+# SPA роутинг (исключаем API)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/api/
 RewriteRule . /index.html [L]
 
 # CORS headers
