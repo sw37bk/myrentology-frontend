@@ -23,8 +23,10 @@ jobs:
     - name: Build
       run: npm run build
     
-    - name: Copy .htaccess to dist
-      run: cp .htaccess dist/
+    - name: Copy .htaccess and PHP files to dist
+      run: |
+        cp .htaccess dist/
+        cp -r api dist/
     
     - name: Deploy to FTP
       uses: SamKirkland/FTP-Deploy-Action@4.3.3
