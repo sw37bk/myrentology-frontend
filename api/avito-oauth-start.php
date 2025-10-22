@@ -10,10 +10,22 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
+$raw_input = file_get_contents('php://input');
+error_log("OAuth start raw input: " . $raw_input);
+
+$input = json_decode($raw_input, true);
+if (!$input) {
+    error_log("JSON decode failed");
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid JSON']);
+    exit;
+}
+
 $client_id = $input['client_id'] ?? '';
 $client_secret = $input['client_secret'] ?? '';
 $user_id = $input['user_id'] ?? '';
+
+error_log("OAuth params: client_id=$client_id, user_id=$user_id");
 
 if (!$client_id || !$client_secret || !$user_id) {
     http_response_code(400);
