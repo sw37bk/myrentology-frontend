@@ -32,6 +32,8 @@ interface Message {
 import { ChatList } from '../components/chats/ChatList';
 import { ChatWindow } from '../components/chats/ChatWindow';
 import { AISettings } from '../components/chats/AISettings';
+import { AvitoChats } from '../components/avito/AvitoChats';
+import { useAuthStore } from '../stores/authStore';
 
 const { TabPane } = Tabs;
 
@@ -39,6 +41,7 @@ export const ChatsPage: React.FC = () => {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [activeTab, setActiveTab] = useState('chats');
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
 
   const { data: chats = [], isLoading: chatsLoading } = useQuery({
     queryKey: ['chats'],
@@ -159,6 +162,18 @@ export const ChatsPage: React.FC = () => {
                 />
               </Col>
             </Row>
+          </TabPane>
+
+          <TabPane 
+            tab={
+              <span>
+                <MessageOutlined />
+                Авито чаты
+              </span>
+            } 
+            key="avito-chats"
+          >
+            {user && <AvitoChats userId={user.id} />}
           </TabPane>
 
           <TabPane 
