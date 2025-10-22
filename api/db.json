@@ -1,16 +1,3 @@
 {
-  "users": [
-    {
-      "id": 999,
-      "email": "sw37@bk.ru",
-      "password": "Xw6Nfbhz",
-      "phone": "+7 999 123-45-67",
-      "subscription_tier": "pro",
-      "subscription_end": "2025-12-31",
-      "role": "admin"
-    }
-  ],
-  "avito_settings": {},
-  "bookings": [],
-  "resources": []
+  "avito_settings": {}
 }
