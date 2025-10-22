@@ -2,6 +2,7 @@ RewriteEngine On
 
 # API перенаправления на PHP файлы
 RewriteRule ^api/auth/login$ api/auth/login.php [L]
+RewriteRule ^api/auth-login$ api/auth/login.php [L]
 RewriteRule ^api/avito-settings$ api/avito-settings.php [L]
 
 # Отключаем статистику reg.ru для JS файлов
