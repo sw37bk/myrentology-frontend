@@ -228,13 +228,46 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
               >
                 Сохранить настройки
               </Button>
-              {(!settings?.access_token && settings?.client_id) && (
+              {!settings?.access_token && (
                 <Button 
                   type="default"
-                  onClick={startOAuthFlow}
+                  onClick={async () => {
+                    const values = form.getFieldsValue();
+                    if (!values.client_id || !values.client_secret) {
+                      message.error('Введите Client ID и Client Secret');
+                      return;
+                    }
+                    
+                    setLoading(true);
+                    try {
+                      const response = await fetch('/api/avito-token', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          client_id: values.client_id,
+                          client_secret: values.client_secret,
+                          user_id: userId
+                        })
+                      });
+                      
+                      if (response.ok) {
+                        const data = await response.json();
+                        message.success(data.message || 'Подключение успешно!');
+                        loadSettings();
+                      } else {
+                        const error = await response.json();
+                        message.error(error.error || 'Ошибка подключения');
+                      }
+                    } catch (error) {
+                      message.error('Ошибка подключения');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  loading={loading}
                   icon={<ApiOutlined />}
                 >
-                  Подключить через Авито
+                  Подключить Авито
                 </Button>
               )}
             </Space>

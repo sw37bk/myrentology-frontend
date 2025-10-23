@@ -8,6 +8,7 @@ RewriteRule ^api/avito-oauth-start$ api/avito-oauth-start.php [L]
 RewriteRule ^api/avito-callback$ api/avito-callback.php [L]
 RewriteRule ^api/avito-chats$ api/avito-chats.php [L]
 RewriteRule ^api/avito-messages$ api/avito-messages.php [L]
+RewriteRule ^api/avito-token$ api/avito-token.php [L]
 
 # Отключаем статистику reg.ru для JS файлов
 RewriteCond %{REQUEST_URI} \.(js|css)$ [NC]
