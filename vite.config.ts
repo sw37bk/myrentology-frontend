@@ -3,15 +3,16 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  base: '/',
   build: {
     outDir: 'dist',
     sourcemap: false,
     minify: 'esbuild',
     rollupOptions: {
       output: {
-        entryFileNames: `[name]-[hash]-1760971000.js`,
-        chunkFileNames: `[name]-[hash]-1760971000.js`,
-        assetFileNames: `[name]-[hash]-1760971000.[ext]`
+        entryFileNames: `[name]-[hash].js`,
+        chunkFileNames: `[name]-[hash].js`,
+        assetFileNames: `[name]-[hash].[ext]`
       }
     }
   },
