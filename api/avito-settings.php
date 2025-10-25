@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
-    $user_id = $input['user_id'] ?? '';
+    $user_id = $input['userId'] ?? '';
     
     if (!$user_id) {
         http_response_code(400);

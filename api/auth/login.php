@@ -24,7 +24,7 @@ if (!$email || !$password) {
 error_log("Login attempt: email='$email', password='$password'");
 
 // Проверяем тестовый аккаунт
-if ($email === 'sw37@bk.ru' && $password === 'Xw6Nfbhz') {
+if ($email === 'sw37@bk.ru' && $password === 'Xw6Nfbhz#') {
     echo json_encode([
         'token' => 'token_999_' . time(),
         'user' => [
