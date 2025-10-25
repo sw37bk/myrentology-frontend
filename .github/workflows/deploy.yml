@@ -26,7 +26,7 @@ jobs:
     - name: Deploy to FTP
       uses: SamKirkland/FTP-Deploy-Action@4.3.3
       with:
-        server: myrentology.ru
+        server: ftp.reg.ru
         username: u2802513
         password: Qwerty123456
         local-dir: ./dist/
@@ -41,7 +41,7 @@ jobs:
     - name: Deploy API files
       uses: SamKirkland/FTP-Deploy-Action@4.3.3
       with:
-        server: myrentology.ru
+        server: ftp.reg.ru
         username: u2802513
         password: Qwerty123456
         local-dir: ./api/
