@@ -23,20 +23,8 @@ jobs:
     - name: Build project
       run: npm run build
     
-    - name: Deploy via SFTP
-      uses: wlixcc/SFTP-Deploy-Action@v1.2.4
-      with:
-        server: 31.31.197.14
-        username: u3304368
-        password: Jb50va7up7SLBTOv
-        local_path: './dist/*'
-        remote_path: '/www/myrentology.ru/'
-        
-    - name: Deploy API via SFTP
-      uses: wlixcc/SFTP-Deploy-Action@v1.2.4
-      with:
-        server: 31.31.197.14
-        username: u3304368
-        password: Jb50va7up7SLBTOv
-        local_path: './api/*'
-        remote_path: '/www/myrentology.ru/api/'
+    - name: Deploy files via FTP
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y lftp
+        lftp -c "set ftp:ssl-allow no; open -u u3304368,Jb50va7up7SLBTOv ftp://31.31.197.14; mirror -R dist/ /www/myrentology.ru/; mirror -R api/ /www/myrentology.ru/api/; quit"
