@@ -23,26 +23,20 @@ jobs:
     - name: Build project
       run: npm run build
     
-    - name: Deploy to FTP
-      uses: SamKirkland/FTP-Deploy-Action@4.3.3
+    - name: Deploy via SFTP
+      uses: wlixcc/SFTP-Deploy-Action@v1.2.4
       with:
         server: 31.31.197.14
         username: u3304368
         password: Jb50va7up7SLBTOv
-        local-dir: ./dist/
-        server-dir: /www/myrentology.ru/
-        exclude: |
-          **/.git*
-          **/.git*/**
-          **/node_modules/**
-          **/src/**
-          **/.github/**
-    
-    - name: Deploy API files
-      uses: SamKirkland/FTP-Deploy-Action@4.3.3
+        local_path: './dist/*'
+        remote_path: '/www/myrentology.ru/'
+        
+    - name: Deploy API via SFTP
+      uses: wlixcc/SFTP-Deploy-Action@v1.2.4
       with:
         server: 31.31.197.14
         username: u3304368
         password: Jb50va7up7SLBTOv
-        local-dir: ./api/
-        server-dir: /www/myrentology.ru/api/
+        local_path: './api/*'
+        remote_path: '/www/myrentology.ru/api/'
