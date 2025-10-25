@@ -2,7 +2,7 @@ RewriteEngine On
 
 # API перенаправления на PHP файлы
 RewriteRule ^api/auth/login$ api/auth/login.php [L]
-RewriteRule ^api/auth-login$ api/auth/login.php [L]
+RewriteRule ^api/auth-login$ api/auth-login.php [L]
 RewriteRule ^api/avito-settings$ api/avito-settings.php [L]
 RewriteRule ^api/avito-oauth-start$ api/avito-oauth-start.php [L]
 RewriteRule ^api/avito-callback$ api/avito-callback.php [L]
