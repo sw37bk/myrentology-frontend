@@ -26,14 +26,23 @@ jobs:
     - name: Deploy to FTP
       uses: SamKirkland/FTP-Deploy-Action@4.3.3
       with:
-        server: 31.31.197.14
-        username: u3304368
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./
-        server-dir: /
+        server: myrentology.ru
+        username: u2802513
+        password: Qwerty123456
+        local-dir: ./dist/
+        server-dir: /www/myrentology.ru/
         exclude: |
           **/.git*
           **/.git*/**
           **/node_modules/**
           **/src/**
           **/.github/**
+    
+    - name: Deploy API files
+      uses: SamKirkland/FTP-Deploy-Action@4.3.3
+      with:
+        server: myrentology.ru
+        username: u2802513
+        password: Qwerty123456
+        local-dir: ./api/
+        server-dir: /www/myrentology.ru/api/
