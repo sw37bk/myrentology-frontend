@@ -23,8 +23,24 @@ jobs:
     - name: Build project
       run: npm run build
     
-    - name: Deploy files via FTP
+    - name: Create deployment archive
       run: |
-        sudo apt-get update
-        sudo apt-get install -y lftp
-        lftp -c "set ftp:ssl-allow no; open -u u3304368,Jb50va7up7SLBTOv ftp://31.31.197.14; mirror -R dist/ /www/myrentology.ru/; mirror -R api/ /www/myrentology.ru/api/; quit"
+        mkdir -p deploy
+        cp -r dist/* deploy/
+        mkdir -p deploy/api
+        cp -r api/* deploy/api/
+        tar -czf site.tar.gz -C deploy .
+        
+    - name: Deploy via curl
+      run: |
+        for file in deploy/*; do
+          if [ -f "$file" ]; then
+            curl -T "$file" ftp://31.31.197.14/www/myrentology.ru/ --user "u3304368:Jb50va7up7SLBTOv" --ftp-create-dirs || echo "Failed to upload $file"
+          fi
+        done
+        
+        for file in deploy/api/*; do
+          if [ -f "$file" ]; then
+            curl -T "$file" ftp://31.31.197.14/www/myrentology.ru/api/ --user "u3304368:Jb50va7up7SLBTOv" --ftp-create-dirs || echo "Failed to upload $file"
+          fi
+        done
