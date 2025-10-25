@@ -1,25 +1,17 @@
 RewriteEngine On
 
-# API перенаправления на PHP файлы
-RewriteRule ^api/auth/login$ api/auth/login.php [L]
+# Прямой доступ к PHP файлам в api
+RewriteCond %{REQUEST_URI} ^/api/.*\.php$
+RewriteRule ^(.*)$ $1 [L]
+
+# API перенаправления
 RewriteRule ^api/auth-login$ api/auth-login.php [L]
-RewriteRule ^api/add-user$ api/add-user.php [L]
-RewriteRule ^api/avito-settings$ api/avito-settings.php [L]
-RewriteRule ^api/avito-oauth-start$ api/avito-oauth-start.php [L]
-RewriteRule ^api/avito-callback$ api/avito-callback.php [L]
-RewriteRule ^api/avito-chats$ api/avito-chats.php [L]
-RewriteRule ^api/avito-messages$ api/avito-messages.php [L]
-RewriteRule ^api/avito-token$ api/avito-token.php [L]
+RewriteRule ^api/test$ api/test.php [L]
 
-# Отключаем статистику reg.ru для JS файлов
-RewriteCond %{REQUEST_URI} \.(js|css)$ [NC]
-RewriteRule .* - [E=nolog:1]
-
-# SPA роутинг (исключаем API и PHP файлы)
+# SPA роутинг (исключаем API)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_URI} !^/api/
-RewriteCond %{REQUEST_URI} !\.(php)$
 RewriteRule . /index.html [L]
 
 # CORS headers
@@ -27,9 +19,4 @@ RewriteRule . /index.html [L]
     Header always set Access-Control-Allow-Origin "*"
     Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
     Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
-</IfModule>
-
-# Отключаем статистику reg.ru
-<IfModule mod_env.c>
-    SetEnv nolog 1
 </IfModule>
