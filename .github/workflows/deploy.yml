@@ -29,18 +29,16 @@ jobs:
         cp -r dist/* deploy/
         mkdir -p deploy/api
         cp -r api/* deploy/api/
+        cp *.php deploy/ 2>/dev/null || true
         tar -czf site.tar.gz -C deploy .
         
-    - name: Deploy via curl
+    - name: Deploy via lftp
       run: |
-        for file in deploy/*; do
-          if [ -f "$file" ]; then
-            curl -T "$file" ftp://31.31.197.14/www/myrentology.ru/ --user "u3304368:Jb50va7up7SLBTOv" --ftp-create-dirs || echo "Failed to upload $file"
-          fi
-        done
-        
-        for file in deploy/api/*; do
-          if [ -f "$file" ]; then
-            curl -T "$file" ftp://31.31.197.14/www/myrentology.ru/api/ --user "u3304368:Jb50va7up7SLBTOv" --ftp-create-dirs || echo "Failed to upload $file"
-          fi
-        done
+        sudo apt-get install -y lftp
+        lftp -c "
+        set ftp:ssl-allow no;
+        open -u u3304368,Jb50va7up7SLBTOv ftp://31.31.197.14;
+        cd /www/myrentology.ru/;
+        mirror -R deploy/ ./;
+        quit
+        "
