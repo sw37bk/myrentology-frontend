@@ -15,10 +15,11 @@ RewriteRule ^api/avito-token$ api/avito-token.php [L]
 RewriteCond %{REQUEST_URI} \.(js|css)$ [NC]
 RewriteRule .* - [E=nolog:1]
 
-# SPA роутинг (исключаем API)
+# SPA роутинг (исключаем API и PHP файлы)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_URI} !^/api/
+RewriteCond %{REQUEST_URI} !\.(php)$
 RewriteRule . /index.html [L]
 
 # CORS headers
