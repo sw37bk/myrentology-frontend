@@ -26,9 +26,9 @@ if (!$tokenData) {
     exit;
 }
 
-// Запрашиваем чаты из Авито API
+// Запрашиваем объявления из Авито API
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'https://api.avito.ru/messenger/v1/accounts/self/chats');
+curl_setopt($ch, CURLOPT_URL, 'https://api.avito.ru/core/v1/accounts/self/items');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Authorization: Bearer ' . $tokenData['access_token'],
@@ -40,25 +40,31 @@ $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
 if ($httpCode === 200) {
-    $chatsData = json_decode($response, true);
+    $adsData = json_decode($response, true);
     
-    // Сохраняем чаты в базу для кеширования
-    foreach ($chatsData['chats'] ?? [] as $chat) {
-        $stmt = $pdo->prepare("INSERT INTO avito_chats (user_id, chat_id, item_id, chat_data, updated_at) 
-                              VALUES (?, ?, ?, ?, NOW()) 
-                              ON DUPLICATE KEY UPDATE chat_data = ?, updated_at = NOW()");
+    // Сохраняем объявления в базу
+    foreach ($adsData['resources'] ?? [] as $ad) {
+        $stmt = $pdo->prepare("INSERT INTO avito_ads (user_id, ad_id, title, price, status, ad_data, updated_at) 
+                              VALUES (?, ?, ?, ?, ?, ?, NOW()) 
+                              ON DUPLICATE KEY UPDATE 
+                              title = ?, price = ?, status = ?, ad_data = ?, updated_at = NOW()");
         $stmt->execute([
-            $userId, 
-            $chat['id'], 
-            $chat['context']['value'] ?? null,
-            json_encode($chat),
-            json_encode($chat)
+            $userId,
+            $ad['id'],
+            $ad['title'] ?? '',
+            $ad['price']['value'] ?? 0,
+            $ad['status'] ?? '',
+            json_encode($ad),
+            $ad['title'] ?? '',
+            $ad['price']['value'] ?? 0,
+            $ad['status'] ?? '',
+            json_encode($ad)
         ]);
     }
     
     echo $response;
 } else {
     http_response_code($httpCode);
-    echo json_encode(['error' => 'Failed to fetch chats from Avito', 'details' => $response]);
+    echo json_encode(['error' => 'Failed to fetch ads from Avito', 'details' => $response]);
 }
 ?>

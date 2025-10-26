@@ -11,6 +11,9 @@ RewriteRule ^api/setup-avito$ api/setup-avito.php [L]
 RewriteRule ^api/setup-avito-app$ api/setup-avito-app.php [L]
 RewriteRule ^api/avito-personal-keys$ api/avito-personal-keys.php [L]
 RewriteRule ^api/setup-personal-keys$ api/setup-personal-keys.php [L]
+RewriteRule ^api/avito-chats$ api/avito-chats.php [L]
+RewriteRule ^api/avito-ads$ api/avito-ads.php [L]
+RewriteRule ^api/setup-avito-tables$ api/setup-avito-tables.php [L]
 
 # CORS headers для API
 <IfModule mod_headers.c>
