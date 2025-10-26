@@ -1,91 +1,69 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-$user_id = $_GET['user_id'] ?? $_POST['user_id'] ?? '';
-$chat_id = $_GET['chat_id'] ?? $_POST['chat_id'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit(0);
 
-if (!$user_id || !$chat_id) {
+$pdo = new PDO("mysql:host=localhost;dbname=u3304368_default;charset=utf8", "u3304368_default", "TVUuIyb7r6w6D2Ut");
+
+$userId = $_GET['user_id'] ?? '';
+$chatId = $_GET['chat_id'] ?? '';
+
+if (!$userId || !$chatId) {
     http_response_code(400);
-    echo json_encode(['error' => 'user_id и chat_id обязательны']);
+    echo json_encode(['error' => 'user_id and chat_id required']);
     exit;
 }
 
-// Получаем настройки пользователя
-$db_file = __DIR__ . '/db.json';
-$db = [];
-if (file_exists($db_file)) {
-    $db = json_decode(file_get_contents($db_file), true) ?: [];
-}
+// Получаем токен пользователя
+$stmt = $pdo->prepare("SELECT access_token FROM user_avito_tokens WHERE user_id = ?");
+$stmt->execute([$userId]);
+$tokenData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!isset($db['avito_settings'][$user_id]) || !$db['avito_settings'][$user_id]['access_token']) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Avito не подключено']);
+if (!$tokenData) {
+    http_response_code(404);
+    echo json_encode(['error' => 'Avito token not found']);
     exit;
 }
 
-$access_token = $db['avito_settings'][$user_id]['access_token'];
+// Получаем сообщения из чата
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, "https://api.avito.ru/messenger/v1/chats/{$chatId}/messages");
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Authorization: Bearer ' . $tokenData['access_token'],
+    'Content-Type: application/json'
+]);
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    // Получение сообщений
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "https://api.avito.ru/messenger/v3/accounts/{$user_id}/chats/{$chat_id}/messages/?limit=50");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Authorization: Bearer {$access_token}",
-        'Content-Type: application/json'
-    ]);
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
 
-    $response = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($http_code === 200) {
-        echo $response;
-    } else {
-        http_response_code($http_code);
-        echo json_encode(['error' => 'Ошибка получения сообщений', 'details' => $response]);
-    }
-} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Отправка сообщения
-    $input = json_decode(file_get_contents('php://input'), true);
-    $message_text = $input['message'] ?? '';
+if ($httpCode === 200) {
+    $messagesData = json_decode($response, true);
     
-    if (!$message_text) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Текст сообщения обязателен']);
-        exit;
+    // Сохраняем сообщения в базу
+    foreach ($messagesData['messages'] ?? [] as $message) {
+        $stmt = $pdo->prepare("INSERT INTO avito_messages (user_id, chat_id, message_id, message_text, author_type, created_at, message_data) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?) 
+                              ON DUPLICATE KEY UPDATE message_data = ?");
+        $stmt->execute([
+            $userId,
+            $chatId,
+            $message['id'],
+            $message['content']['text'] ?? '',
+            $message['author']['type'] ?? '',
+            $message['created'] ?? null,
+            json_encode($message),
+            json_encode($message)
+        ]);
     }
-
-    $message_data = [
-        'message' => ['text' => $message_text],
-        'type' => 'text'
-    ];
-
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "https://api.avito.ru/messenger/v1/accounts/{$user_id}/chats/{$chat_id}/messages");
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($message_data));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Authorization: Bearer {$access_token}",
-        'Content-Type: application/json'
-    ]);
-
-    $response = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($http_code === 200) {
-        echo $response;
-    } else {
-        http_response_code($http_code);
-        echo json_encode(['error' => 'Ошибка отправки сообщения', 'details' => $response]);
-    }
+    
+    echo $response;
 } else {
-    http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
+    http_response_code($httpCode);
+    echo json_encode(['error' => 'Failed to fetch messages from Avito', 'details' => $response, 'http_code' => $httpCode]);
 }
 ?>
