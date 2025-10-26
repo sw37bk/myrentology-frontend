@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, List, Input, Button, message, Typography } from 'antd';
-import { MessageOutlined, SendOutlined } from '@ant-design/icons';
+import { Card, List, Input, Button, message, Typography, Alert, Space } from 'antd';
+import { MessageOutlined, SendOutlined, SyncOutlined, CheckCircleOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -36,10 +36,24 @@ export const AvitoChats: React.FC<AvitoChatsProps> = ({ userId }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [avitoConnected, setAvitoConnected] = useState(false);
 
   useEffect(() => {
+    checkAvitoConnection();
     loadChats();
   }, [userId]);
+
+  const checkAvitoConnection = async () => {
+    try {
+      const response = await fetch(`/api/avito-user-status?userId=${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setAvitoConnected(data.connected);
+      }
+    } catch (error) {
+      console.error('Ошибка проверки подключения Авито:', error);
+    }
+  };
 
   const loadChats = async () => {
     setLoading(true);
@@ -98,8 +112,38 @@ export const AvitoChats: React.FC<AvitoChatsProps> = ({ userId }) => {
   };
 
   return (
-    <div style={{ display: 'flex', height: '600px', gap: '16px' }}>
-      <Card title="Чаты Avito" style={{ width: '300px' }}>
+    <div>
+      <Alert
+        message={avitoConnected ? "✅ Авито подключено" : "❌ Авито не подключено"}
+        description={avitoConnected ? "Чаты загружаются автоматически" : "Настройте подключение в разделе Настройки"}
+        type={avitoConnected ? "success" : "warning"}
+        showIcon
+        style={{ marginBottom: 16 }}
+        action={
+          <Space>
+            <Button 
+              size="small" 
+              icon={<SyncOutlined />}
+              onClick={loadChats}
+              loading={loading}
+            >
+              Обновить
+            </Button>
+          </Space>
+        }
+      />
+      
+      <div style={{ display: 'flex', height: '600px', gap: '16px' }}>
+        <Card 
+          title={
+            <Space>
+              <MessageOutlined />
+              Чаты Avito
+              {avitoConnected && <CheckCircleOutlined style={{ color: '#52c41a' }} />}
+            </Space>
+          } 
+          style={{ width: '300px' }}
+        >
         <List
           loading={loading}
           dataSource={chats}
@@ -162,7 +206,8 @@ export const AvitoChats: React.FC<AvitoChatsProps> = ({ userId }) => {
             Выберите чат
           </div>
         )}
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };
