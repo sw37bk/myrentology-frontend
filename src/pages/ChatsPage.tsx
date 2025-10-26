@@ -173,7 +173,7 @@ export const ChatsPage: React.FC = () => {
             } 
             key="avito-chats"
           >
-            {user && <AvitoChats userId={user.id} />}
+            {user?.id && <AvitoChats userId={Number(user.id)} />}
           </TabPane>
 
           <TabPane 
