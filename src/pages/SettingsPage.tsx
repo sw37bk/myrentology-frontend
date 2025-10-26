@@ -11,7 +11,7 @@ export const SettingsPage: React.FC = () => {
   return (
     <div style={{ padding: '24px' }}>
       <Row gutter={[24, 24]}>
-        <Col span={24}>
+        <Col xs={24} lg={12}>
           <Card title="Интеграция с Авито" size="small">
             <AvitoSettings userId={user?.id || 999} />
           </Card>
