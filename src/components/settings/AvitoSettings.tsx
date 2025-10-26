@@ -48,11 +48,8 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          user_id: userId,
           client_id: values.client_id,
-          client_secret: values.client_secret,
-          access_token: values.access_token || null,
-          is_connected: true
+          client_secret: values.client_secret
         })
       });
 
@@ -142,7 +139,7 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
   };
 
   return (
-    <div style={{ maxWidth: 600 }}>
+    <div>
       <Card>
         <Title level={3}>Настройки интеграции с Авито</Title>
         
