@@ -3,6 +3,7 @@ import { Modal, Form, Input, Button, message, Space, Tag, Drawer } from 'antd';
 import { LinkOutlined, BarChartOutlined, PlusOutlined } from '@ant-design/icons';
 import { Product } from '../../types';
 import { AvitoAdCreator } from './AvitoAdCreator';
+import { AvitoAdSelector } from './AvitoAdSelector';
 import { avitoAdsApi } from '../../services/avitoAds';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -15,17 +16,42 @@ export const ResourceAvitoLink: React.FC<ResourceAvitoLinkProps> = ({ resource, 
   const { user } = useAuthStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [analytics, setAnalytics] = useState<any>(null);
   const [form] = Form.useForm();
 
-  const handleSubmit = (values: any) => {
-    onUpdate(resource.id, {
-      avito_item_id: values.avito_item_id,
-      avito_url: values.avito_url
-    });
-    setIsModalOpen(false);
-    message.success('Привязка к Авито обновлена');
+  const handleSubmit = async (values: any) => {
+    try {
+      if (!user?.id) {
+        message.error('Не удалось определить пользователя');
+        return;
+      }
+
+      const response = await fetch('/api/link-resource-avito', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          resource_id: resource.id,
+          avito_ad_id: values.avito_item_id
+        })
+      });
+
+      if (response.ok) {
+        onUpdate(resource.id, {
+          avito_item_id: values.avito_item_id,
+          avito_url: values.avito_url
+        });
+        setIsModalOpen(false);
+        message.success('Привязка к Авито обновлена');
+      } else {
+        const error = await response.json();
+        message.error(error.error || 'Ошибка привязки');
+      }
+    } catch (error) {
+      message.error('Ошибка привязки к Авито');
+    }
   };
 
   return (
@@ -43,9 +69,16 @@ export const ResourceAvitoLink: React.FC<ResourceAvitoLinkProps> = ({ resource, 
         <Button 
           size="small" 
           icon={<LinkOutlined />}
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsSelectorOpen(true)}
         >
           {resource.avito_item_id ? 'Изменить' : 'Привязать'}
+        </Button>
+        <Button 
+          size="small" 
+          type="link"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Ручной ввод
         </Button>
         {resource.avito_item_id && (
           <Button 
@@ -150,6 +183,18 @@ export const ResourceAvitoLink: React.FC<ResourceAvitoLinkProps> = ({ resource, 
           </div>
         )}
       </Drawer>
+
+      <AvitoAdSelector
+        isOpen={isSelectorOpen}
+        onClose={() => setIsSelectorOpen(false)}
+        onSelect={(adId, adUrl) => {
+          onUpdate(resource.id, {
+            avito_item_id: adId,
+            avito_url: adUrl
+          });
+        }}
+        resourceId={resource.id}
+      />
     </>
   );
 };
