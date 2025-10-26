@@ -26,9 +26,9 @@ if (!$tokenData) {
     exit;
 }
 
-// Запрашиваем чаты из Авито API
+// Запрашиваем чаты из реального Авито Messenger API
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'https://api.avito.ru/messenger/v1/accounts/self/chats');
+curl_setopt($ch, CURLOPT_URL, 'https://api.avito.ru/messenger/v2/accounts/self/chats');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Authorization: Bearer ' . $tokenData['access_token'],
@@ -43,22 +43,41 @@ if ($httpCode === 200) {
     $chatsData = json_decode($response, true);
     
     // Сохраняем чаты в базу для кеширования
-    foreach ($chatsData['chats'] ?? [] as $chat) {
-        $stmt = $pdo->prepare("INSERT INTO avito_chats (user_id, chat_id, item_id, chat_data, updated_at) 
-                              VALUES (?, ?, ?, ?, NOW()) 
-                              ON DUPLICATE KEY UPDATE chat_data = ?, updated_at = NOW()");
-        $stmt->execute([
-            $userId, 
-            $chat['id'], 
-            $chat['context']['value'] ?? null,
-            json_encode($chat),
-            json_encode($chat)
-        ]);
+    if (isset($chatsData['chats'])) {
+        foreach ($chatsData['chats'] as $chat) {
+            $stmt = $pdo->prepare("INSERT INTO avito_chats (user_id, chat_id, item_id, chat_data, updated_at) 
+                                  VALUES (?, ?, ?, ?, NOW()) 
+                                  ON DUPLICATE KEY UPDATE chat_data = ?, updated_at = NOW()");
+            $stmt->execute([
+                $userId, 
+                $chat['id'], 
+                $chat['context']['value'] ?? null,
+                json_encode($chat),
+                json_encode($chat)
+            ]);
+        }
     }
     
     echo $response;
 } else {
-    http_response_code($httpCode);
-    echo json_encode(['error' => 'Failed to fetch chats from Avito', 'details' => $response]);
+    // Если API недоступен, возвращаем кешированные данные
+    $stmt = $pdo->prepare("SELECT chat_data FROM avito_chats WHERE user_id = ? ORDER BY updated_at DESC");
+    $stmt->execute([$userId]);
+    $cachedChats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if ($cachedChats) {
+        $chats = array_map(function($row) {
+            return json_decode($row['chat_data'], true);
+        }, $cachedChats);
+        
+        echo json_encode(['chats' => $chats]);
+    } else {
+        http_response_code($httpCode);
+        echo json_encode([
+            'error' => 'Failed to fetch chats from Avito', 
+            'details' => $response, 
+            'http_code' => $httpCode
+        ]);
+    }
 }
 ?>

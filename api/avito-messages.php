@@ -1,69 +1,128 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit(0);
 
 $pdo = new PDO("mysql:host=localhost;dbname=u3304368_default;charset=utf8", "u3304368_default", "TVUuIyb7r6w6D2Ut");
 
-$userId = $_GET['user_id'] ?? '';
-$chatId = $_GET['chat_id'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    // Получение сообщений
+    $userId = $_GET['user_id'] ?? '';
+    $chatId = $_GET['chat_id'] ?? '';
 
-if (!$userId || !$chatId) {
-    http_response_code(400);
-    echo json_encode(['error' => 'user_id and chat_id required']);
-    exit;
-}
-
-// Получаем токен пользователя
-$stmt = $pdo->prepare("SELECT access_token FROM user_avito_tokens WHERE user_id = ?");
-$stmt->execute([$userId]);
-$tokenData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$tokenData) {
-    http_response_code(404);
-    echo json_encode(['error' => 'Avito token not found']);
-    exit;
-}
-
-// Получаем сообщения из чата
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, "https://api.avito.ru/messenger/v1/chats/{$chatId}/messages");
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'Authorization: Bearer ' . $tokenData['access_token'],
-    'Content-Type: application/json'
-]);
-
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
-
-if ($httpCode === 200) {
-    $messagesData = json_decode($response, true);
-    
-    // Сохраняем сообщения в базу
-    foreach ($messagesData['messages'] ?? [] as $message) {
-        $stmt = $pdo->prepare("INSERT INTO avito_messages (user_id, chat_id, message_id, message_text, author_type, created_at, message_data) 
-                              VALUES (?, ?, ?, ?, ?, ?, ?) 
-                              ON DUPLICATE KEY UPDATE message_data = ?");
-        $stmt->execute([
-            $userId,
-            $chatId,
-            $message['id'],
-            $message['content']['text'] ?? '',
-            $message['author']['type'] ?? '',
-            $message['created'] ?? null,
-            json_encode($message),
-            json_encode($message)
-        ]);
+    if (!$userId || !$chatId) {
+        http_response_code(400);
+        echo json_encode(['error' => 'user_id and chat_id required']);
+        exit;
     }
-    
-    echo $response;
-} else {
-    http_response_code($httpCode);
-    echo json_encode(['error' => 'Failed to fetch messages from Avito', 'details' => $response, 'http_code' => $httpCode]);
+
+    // Получаем токен пользователя
+    $stmt = $pdo->prepare("SELECT access_token FROM user_avito_tokens WHERE user_id = ?");
+    $stmt->execute([$userId]);
+    $tokenData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$tokenData) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Avito token not found']);
+        exit;
+    }
+
+    // Получаем сообщения из чата
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "https://api.avito.ru/messenger/v1/accounts/self/chats/{$chatId}/messages");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . $tokenData['access_token'],
+        'Content-Type: application/json'
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode === 200) {
+        $messagesData = json_decode($response, true);
+        
+        // Сохраняем сообщения в базу
+        if (isset($messagesData['messages'])) {
+            foreach ($messagesData['messages'] as $message) {
+                $stmt = $pdo->prepare("INSERT INTO avito_messages (user_id, chat_id, message_id, message_text, author_type, created_at, message_data) 
+                                      VALUES (?, ?, ?, ?, ?, ?, ?) 
+                                      ON DUPLICATE KEY UPDATE message_data = ?");
+                $stmt->execute([
+                    $userId,
+                    $chatId,
+                    $message['id'],
+                    $message['content']['text'] ?? '',
+                    $message['author']['type'] ?? '',
+                    $message['created'] ?? null,
+                    json_encode($message),
+                    json_encode($message)
+                ]);
+            }
+        }
+        
+        echo $response;
+    } else {
+        http_response_code($httpCode);
+        echo json_encode(['error' => 'Failed to fetch messages from Avito', 'details' => $response, 'http_code' => $httpCode]);
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Отправка сообщения
+    $input = json_decode(file_get_contents('php://input'), true);
+    $userId = $input['user_id'] ?? '';
+    $chatId = $input['chat_id'] ?? '';
+    $message = $input['message'] ?? '';
+
+    if (!$userId || !$chatId || !$message) {
+        http_response_code(400);
+        echo json_encode(['error' => 'user_id, chat_id and message required']);
+        exit;
+    }
+
+    // Получаем токен пользователя
+    $stmt = $pdo->prepare("SELECT access_token FROM user_avito_tokens WHERE user_id = ?");
+    $stmt->execute([$userId]);
+    $tokenData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$tokenData) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Avito token not found']);
+        exit;
+    }
+
+    // Отправляем сообщение через Авито API
+    $messageData = [
+        'message' => [
+            'text' => $message
+        ],
+        'type' => 'text'
+    ];
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "https://api.avito.ru/messenger/v1/accounts/self/chats/{$chatId}/messages");
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($messageData));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . $tokenData['access_token'],
+        'Content-Type: application/json'
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode === 200 || $httpCode === 201) {
+        echo json_encode(['success' => true, 'message' => 'Message sent']);
+    } else {
+        http_response_code($httpCode);
+        echo json_encode(['error' => 'Failed to send message', 'details' => $response, 'http_code' => $httpCode]);
+    }
 }
 ?>
