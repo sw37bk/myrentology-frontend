@@ -15,26 +15,24 @@ if (!$userId) {
     exit;
 }
 
-// Получаем токен пользователя
+// Проверяем есть ли токен у пользователя
 $stmt = $pdo->prepare("SELECT * FROM user_avito_tokens WHERE user_id = ?");
 $stmt->execute([$userId]);
 $token = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$token) {
-    http_response_code(404);
-    echo json_encode(['error' => 'Token not found']);
-    exit;
-}
+$connected = false;
+$expired = false;
 
-// Проверяем не истек ли токен
-if ($token['expires_at'] && strtotime($token['expires_at']) < time()) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Token expired']);
-    exit;
+if ($token) {
+    $connected = true;
+    if ($token['expires_at'] && strtotime($token['expires_at']) < time()) {
+        $expired = true;
+    }
 }
 
 echo json_encode([
-    'access_token' => $token['access_token'],
-    'expires_at' => $token['expires_at']
+    'connected' => $connected,
+    'expired' => $expired,
+    'expires_at' => $token['expires_at'] ?? null
 ]);
 ?>

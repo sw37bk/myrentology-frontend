@@ -1,71 +1,43 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
-    exit;
-}
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit(0);
 
-$raw_input = file_get_contents('php://input');
-error_log("OAuth start raw input: " . $raw_input);
+$pdo = new PDO("mysql:host=localhost;dbname=u3304368_default;charset=utf8", "u3304368_default", "TVUuIyb7r6w6D2Ut");
 
-$input = json_decode($raw_input, true);
-if (!$input) {
-    error_log("JSON decode failed");
+// Получаем настройки приложения
+$stmt = $pdo->query("SELECT * FROM avito_app_settings WHERE id = 1");
+$settings = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$settings || !$settings['client_id']) {
     http_response_code(400);
-    echo json_encode(['error' => 'Invalid JSON']);
+    echo json_encode(['error' => 'Avito app not configured']);
     exit;
 }
 
-$client_id = $input['client_id'] ?? '';
-$client_secret = $input['client_secret'] ?? '';
-$user_id = $input['user_id'] ?? '';
+$input = json_decode(file_get_contents('php://input'), true);
+$userId = $input['userId'] ?? '';
 
-error_log("OAuth params: client_id=$client_id, user_id=$user_id");
-
-if (!$client_id || !$client_secret || !$user_id) {
+if (!$userId) {
     http_response_code(400);
-    echo json_encode(['error' => 'Client ID, Client Secret и User ID обязательны']);
+    echo json_encode(['error' => 'User ID required']);
     exit;
 }
 
-// Генерируем state
-$state = bin2hex(random_bytes(16));
+// Генерируем OAuth URL
+$redirect_uri = 'https://myrentology.ru/api/avito-oauth-callback';
+$state = base64_encode(json_encode(['userId' => $userId]));
 
-// Сохраняем данные OAuth (в реальности нужна БД)
-$oauth_file = __DIR__ . '/oauth_states.json';
-$oauth_data = [];
-if (file_exists($oauth_file)) {
-    $oauth_data = json_decode(file_get_contents($oauth_file), true) ?: [];
-}
-
-$oauth_data[$state] = [
-    'client_id' => $client_id,
-    'client_secret' => $client_secret,
-    'user_id' => $user_id,
-    'timestamp' => time()
-];
-
-file_put_contents($oauth_file, json_encode($oauth_data));
-
-// Генерируем URL авторизации
-$scopes = 'messenger:read,messenger:write,items:info,stats:read';
-$redirect_uri = 'http://xn--c1adkkjgblu9k.xn--p1ai/api/avito-callback/';
-$auth_url = 'https://avito.ru/oauth?' . http_build_query([
+$oauth_url = 'https://avito.ru/oauth?' . http_build_query([
+    'client_id' => $settings['client_id'],
     'response_type' => 'code',
-    'client_id' => $client_id,
-    'scope' => $scopes,
+    'redirect_uri' => $redirect_uri,
     'state' => $state,
-    'redirect_uri' => $redirect_uri
+    'scope' => 'messenger:read messenger:write items:read'
 ]);
 
-echo json_encode([
-    'success' => true,
-    'auth_url' => $auth_url,
-    'state' => $state
-]);
+echo json_encode(['oauth_url' => $oauth_url]);
 ?>

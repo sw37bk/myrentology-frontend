@@ -1,22 +1,26 @@
 RewriteEngine On
 
-# Прямой доступ к PHP файлам в api
-RewriteCond %{REQUEST_URI} ^/api/.*\.php$
-RewriteRule ^(.*)$ $1 [L]
-
 # API перенаправления
 RewriteRule ^api/auth-login$ api/auth-login.php [L]
-RewriteRule ^api/test$ api/test.php [L]
+RewriteRule ^api/avito-settings$ api/avito-settings.php [L]
+RewriteRule ^api/avito-user-status$ api/avito-user-status.php [L]
+RewriteRule ^api/avito-oauth-start$ api/avito-oauth-start.php [L]
+RewriteRule ^api/avito-oauth-callback$ api/avito-oauth-callback.php [L]
+RewriteRule ^api/avito-token$ api/avito-token.php [L]
+RewriteRule ^api/setup-avito$ api/setup-avito.php [L]
 
-# SPA роутинг (исключаем API)
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} !^/api/
-RewriteRule . /index.html [L]
-
-# CORS headers
+# CORS headers для API
 <IfModule mod_headers.c>
     Header always set Access-Control-Allow-Origin "*"
     Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
     Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
 </IfModule>
+
+# Исключаем API из SPA роутинга - пропускаем все запросы к /api/ напрямую
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^(.*)$ - [L]
+
+# SPA роутинг для всего остального
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]

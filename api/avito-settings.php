@@ -1,74 +1,44 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-$db_file = __DIR__ . '/db.json';
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit(0);
 
-function readDB() {
-    global $db_file;
-    if (file_exists($db_file)) {
-        return json_decode(file_get_contents($db_file), true);
-    }
-    return ['avito_settings' => []];
-}
-
-function writeDB($data) {
-    global $db_file;
-    return file_put_contents($db_file, json_encode($data, JSON_PRETTY_PRINT));
-}
+$pdo = new PDO("mysql:host=localhost;dbname=u3304368_default;charset=utf8", "u3304368_default", "TVUuIyb7r6w6D2Ut");
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $userId = $_GET['userId'] ?? '';
-    if (!$userId) {
-        http_response_code(400);
-        echo json_encode(['error' => 'userId обязателен']);
-        exit;
-    }
+    // Получение настроек
+    $stmt = $pdo->query("SELECT * FROM avito_app_settings WHERE id = 1");
+    $settings = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    $db = readDB();
-    if (!isset($db['avito_settings'][$userId])) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Настройки не найдены']);
-        exit;
+    if ($settings) {
+        echo json_encode([
+            'client_id' => $settings['client_id'],
+            'has_settings' => !empty($settings['client_id'])
+        ]);
+    } else {
+        echo json_encode(['has_settings' => false]);
     }
-    
-    echo json_encode($db['avito_settings'][$userId]);
-    exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Сохранение настроек (только админ)
     $input = json_decode(file_get_contents('php://input'), true);
-    $user_id = $input['userId'] ?? '';
+    $client_id = $input['client_id'] ?? '';
+    $client_secret = $input['client_secret'] ?? '';
     
-    if (!$user_id) {
+    if (!$client_id || !$client_secret) {
         http_response_code(400);
-        echo json_encode(['error' => 'user_id обязателен']);
+        echo json_encode(['error' => 'Client ID and secret required']);
         exit;
     }
     
-    $settings = [
-        'id' => 1,
-        'user_id' => $user_id,
-        'client_id' => $input['client_id'] ?? '',
-        'client_secret' => $input['client_secret'] ?? '',
-        'access_token' => $input['access_token'] ?? null,
-        'refresh_token' => $input['refresh_token'] ?? null,
-        'is_connected' => ($input['is_connected'] ?? false) !== false,
-        'last_sync' => date('c'),
-        'created_at' => date('c'),
-        'updated_at' => date('c')
-    ];
+    $stmt = $pdo->prepare("INSERT INTO avito_app_settings (id, client_id, client_secret) VALUES (1, ?, ?) 
+                          ON DUPLICATE KEY UPDATE client_id = ?, client_secret = ?");
+    $stmt->execute([$client_id, $client_secret, $client_id, $client_secret]);
     
-    $db = readDB();
-    $db['avito_settings'][$user_id] = $settings;
-    writeDB($db);
-    
-    echo json_encode($settings);
-    exit;
+    echo json_encode(['success' => true]);
 }
-
-http_response_code(405);
-echo json_encode(['error' => 'Method not allowed']);
 ?>
