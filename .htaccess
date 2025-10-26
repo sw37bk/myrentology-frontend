@@ -16,6 +16,9 @@ RewriteRule ^api/avito-ads$ api/avito-ads.php [L]
 RewriteRule ^api/setup-avito-tables$ api/setup-avito-tables.php [L]
 RewriteRule ^api/link-resource-avito$ api/link-resource-avito.php [L]
 RewriteRule ^api/avito-messages$ api/avito-messages.php [L]
+RewriteRule ^api/avito-webhook$ api/avito-webhook.php [L]
+RewriteRule ^api/avito-webhook-setup$ api/avito-webhook-setup.php [L]
+RewriteRule ^api/setup-webhook-tables$ api/setup-webhook-tables.php [L]
 
 # CORS headers для API
 <IfModule mod_headers.c>
