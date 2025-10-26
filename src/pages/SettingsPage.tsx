@@ -1,6 +1,5 @@
 import React from 'react';
 import { Card, Row, Col } from 'antd';
-import { SettingOutlined } from '@ant-design/icons';
 import { TelegramLink } from '../components/settings/TelegramLink';
 import { NotificationSettings } from '../components/notifications/NotificationSettings';
 import { AvitoSettings } from '../components/settings/AvitoSettings';
@@ -10,18 +9,26 @@ export const SettingsPage: React.FC = () => {
   const { user } = useAuthStore();
 
   return (
-    <Card title={<><SettingOutlined /> Настройки</>}>
-      <Row gutter={[16, 16]}>
+    <div style={{ padding: '24px' }}>
+      <Row gutter={[24, 24]}>
         <Col span={24}>
-          <AvitoSettings userId={user?.id || 999} />
+          <Card title="Интеграция с Авито" size="small">
+            <AvitoSettings userId={user?.id || 999} />
+          </Card>
         </Col>
-        <Col span={12}>
-          <TelegramLink />
+        
+        <Col xs={24} lg={12}>
+          <Card title="Интеграция с Telegram" size="small">
+            <TelegramLink />
+          </Card>
         </Col>
-        <Col span={12}>
-          <NotificationSettings />
+        
+        <Col xs={24} lg={12}>
+          <Card title="Настройки уведомлений" size="small">
+            <NotificationSettings />
+          </Card>
         </Col>
       </Row>
-    </Card>
+    </div>
   );
 };

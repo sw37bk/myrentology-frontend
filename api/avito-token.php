@@ -52,8 +52,8 @@ curl_close($ch);
 $tokenResponse = json_decode($response, true);
 
 if (isset($tokenResponse['access_token'])) {
-    // Сохраняем токен
-    $expires_at = date('Y-m-d H:i:s', time() + $tokenResponse['expires_in']);
+    // Сохраняем токен на месяц
+    $expires_at = date('Y-m-d H:i:s', time() + (30 * 24 * 60 * 60)); // 30 дней
     
     $stmt = $pdo->prepare("INSERT INTO user_avito_tokens (user_id, access_token, expires_at) 
                           VALUES (?, ?, ?) 

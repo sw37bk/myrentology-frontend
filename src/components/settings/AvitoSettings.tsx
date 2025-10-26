@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, Alert, Space, Typography, message } from 'antd';
-import { ApiOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { ApiOutlined, CheckCircleOutlined, ExclamationCircleOutlined, MessageOutlined } from '@ant-design/icons';
 import { AvitoSettings as AvitoSettingsType } from '../../types';
 
 const { Title, Paragraph } = Typography;
@@ -268,6 +268,31 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
                   icon={<ApiOutlined />}
                 >
                   Подключить Авито
+                </Button>
+              )}
+              {settings?.connected && (
+                <Button 
+                  type="dashed"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/avito-webhook-setup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userId })
+                      });
+                      
+                      if (response.ok) {
+                        message.success('Вебхук настроен!');
+                      } else {
+                        const error = await response.json();
+                        message.error(error.error || 'Ошибка настройки вебхука');
+                      }
+                    } catch (error) {
+                      message.error('Ошибка настройки вебхука');
+                    }
+                  }}
+                >
+                  Настроить вебхук
                 </Button>
               )}
             </Space>
