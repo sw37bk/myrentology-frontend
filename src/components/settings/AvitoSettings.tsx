@@ -156,7 +156,7 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
           <li>Мы автоматически настроим получение сообщений</li>
         </ol>
 
-        {settings?.is_connected && settings?.access_token ? (
+        {settings?.connected ? (
           <Alert
             message="✅ Авито успешно подключено!"
             description={
@@ -179,7 +179,7 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
               </Button>
             }
           />
-        ) : settings?.client_id ? (
+        ) : settings?.has_settings && !settings?.connected ? (
           <Alert
             message="⚠️ Настройки сохранены, но не подключено"
             description="Ключи API сохранены, но нужно завершить авторизацию через Авито"
@@ -228,7 +228,7 @@ export const AvitoSettings: React.FC<AvitoSettingsProps> = ({ userId }) => {
               >
                 Сохранить настройки
               </Button>
-              {!settings?.access_token && (
+              {!settings?.connected && (
                 <Button 
                   type="default"
                   onClick={async () => {
