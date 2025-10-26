@@ -32,13 +32,10 @@ jobs:
         cp *.php deploy/ 2>/dev/null || true
         tar -czf site.tar.gz -C deploy .
         
-    - name: Deploy via lftp
+    - name: Deploy files
       run: |
-        sudo apt-get install -y lftp
-        lftp -c "
-        set ftp:ssl-allow no;
-        open -u u3304368,Jb50va7up7SLBTOv ftp://31.31.197.14;
-        cd /www/myrentology.ru/;
-        mirror -R deploy/ ./;
-        quit
-        "
+        find deploy -type f -name "*.php" -exec curl -T {} ftp://31.31.197.14/www/myrentology.ru/{} --user "u3304368:Jb50va7up7SLBTOv" --ftp-create-dirs \;
+        find deploy -type f -name "*.html" -exec curl -T {} ftp://31.31.197.14/www/myrentology.ru/{} --user "u3304368:Jb50va7up7SLBTOv" --ftp-create-dirs \;
+        find deploy -type f -name "*.js" -exec curl -T {} ftp://31.31.197.14/www/myrentology.ru/{} --user "u3304368:Jb50va7up7SLBTOv" --ftp-create-dirs \;
+        find deploy -type f -name "*.css" -exec curl -T {} ftp://31.31.197.14/www/myrentology.ru/{} --user "u3304368:Jb50va7up7SLBTOv" --ftp-create-dirs \;
+        find deploy -type f -name ".htaccess" -exec curl -T {} ftp://31.31.197.14/www/myrentology.ru/{} --user "u3304368:Jb50va7up7SLBTOv" --ftp-create-dirs \;
