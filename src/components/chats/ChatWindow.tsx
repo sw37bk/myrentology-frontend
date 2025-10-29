@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Input, Button, List, Avatar, Space, Typography, Spin } from 'antd';
+import { Input, Button, List, Avatar, Space, Typography, Spin, Row, Col } from 'antd';
 import { SendOutlined, UserOutlined, RobotOutlined } from '@ant-design/icons';
+import { AIAssistantIntegration } from './AIAssistantIntegration';
 
 interface Chat {
   id: number;
@@ -86,23 +87,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ 
-        padding: '16px', 
-        borderBottom: '1px solid #f0f0f0',
-        background: '#fafafa'
-      }}>
-        <Space>
-          <Avatar icon={<UserOutlined />} />
-          <div>
-            <Text strong>{chat.customer_name}</Text>
-            <br />
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              {chat.item_title} • {chat.customer_phone}
-            </Text>
-          </div>
-        </Space>
-      </div>
+    <Row style={{ height: '100%' }}>
+      <Col span={18} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ 
+          padding: '16px', 
+          borderBottom: '1px solid #f0f0f0',
+          background: '#fafafa'
+        }}>
+          <Space>
+            <Avatar icon={<UserOutlined />} />
+            <div>
+              <Text strong>{chat.customer_name}</Text>
+              <br />
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                {chat.item_title} • {chat.customer_phone}
+              </Text>
+            </div>
+          </Space>
+        </div>
 
       <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
         {loading ? (
@@ -160,27 +162,38 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      <div style={{ padding: '16px', borderTop: '1px solid #f0f0f0' }}>
-        <Space.Compact style={{ width: '100%' }}>
-          <TextArea
-            value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Введите сообщение..."
-            autoSize={{ minRows: 1, maxRows: 4 }}
-            style={{ resize: 'none' }}
-          />
-          <Button 
-            type="primary" 
-            icon={<SendOutlined />}
-            onClick={handleSend}
-            loading={sending}
-            disabled={!messageText.trim()}
-          >
-            Отправить
-          </Button>
-        </Space.Compact>
-      </div>
-    </div>
+        <div style={{ padding: '16px', borderTop: '1px solid #f0f0f0' }}>
+          <Space.Compact style={{ width: '100%' }}>
+            <TextArea
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Введите сообщение..."
+              autoSize={{ minRows: 1, maxRows: 4 }}
+              style={{ resize: 'none' }}
+            />
+            <Button 
+              type="primary" 
+              icon={<SendOutlined />}
+              onClick={handleSend}
+              loading={sending}
+              disabled={!messageText.trim()}
+            >
+              Отправить
+            </Button>
+          </Space.Compact>
+        </div>
+      </Col>
+      
+      <Col span={6} style={{ borderLeft: '1px solid #f0f0f0', padding: '16px' }}>
+        <AIAssistantIntegration 
+          chatId={chat.avito_chat_id}
+          resourceId={parseInt(chat.item_id)}
+          onAIResponse={(response) => {
+            setMessageText(response);
+          }}
+        />
+      </Col>
+    </Row>
   );
 };

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Настройка OpenAI ключа</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="password"], input[type="text"], select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007cba; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #005a87; }
+        .success { color: green; padding: 10px; background: #f0f8f0; border-radius: 4px; }
+        .error { color: red; padding: 10px; background: #f8f0f0; border-radius: 4px; }
+        .status { margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🤖 Настройка OpenAI API ключа</h1>
+    <p>Только для администратора системы</p>
+    
+    <div class="form-group">
+        <label for="apiKey">OpenAI API Key:</label>
+        <input type="password" id="apiKey" placeholder="sk-...">
+    </div>
+    
+    <div class="form-group">
+        <label for="proxy">OpenAI Proxy (опционально):</label>
+        <input type="text" id="proxy" placeholder="user:pass@ip:port" value="user236247:8tv39p@194.87.40.173:7213">
+    </div>
+    
+    <div class="form-group">
+        <label for="model">OpenAI Модель:</label>
+        <select id="model">
+            <option value="gpt-3.5-turbo">GPT-3.5 Turbo (быстрая, дешевая)</option>
+            <option value="gpt-4">GPT-4 (умная, дорогая)</option>
+            <option value="gpt-4-turbo">GPT-4 Turbo (оптимальная)</option>
+        </select>
+    </div>
+    
+    <button onclick="saveSettings()">Сохранить настройки</button>
+    <button onclick="checkStatus()">Проверить статус</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function saveSettings() {
+            const apiKey = document.getElementById('apiKey').value;
+            const proxy = document.getElementById('proxy').value;
+            const model = document.getElementById('model').value;
+            const result = document.getElementById('result');
+            
+            try {
+                const response = await fetch('/api/admin-ai-settings.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: 1,
+                        openai_api_key: apiKey,
+                        openai_proxy: proxy,
+                        openai_model: model
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    result.innerHTML = '<div class="success">✅ Настройки успешно сохранены!</div>';
+                    document.getElementById('apiKey').value = '';
+                } else {
+                    result.innerHTML = '<div class="error">❌ Ошибка: ' + (data.error || 'Неизвестная ошибка') + '</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error">❌ Ошибка подключения: ' + error.message + '</div>';
+            }
+        }
+        
+        async function checkStatus() {
+            const result = document.getElementById('result');
+            
+            try {
+                const response = await fetch('/api/admin-ai-settings.php?user_id=1');
+                const data = await response.json();
+                
+                result.innerHTML = '<div class="status">' +
+                    '<strong>Статус OpenAI:</strong> ' + 
+                    (data.has_key ? '✅ Настроен (' + data.key_preview + ')' : '❌ Не настроен') +
+                    '<br><strong>Прокси:</strong> ' +
+                    (data.has_proxy ? '✅ Настроен (' + data.proxy_preview + ')' : '❌ Не настроен') +
+                    '<br><strong>Модель:</strong> ' + data.model +
+                    '</div>';
+                    
+                // Устанавливаем текущую модель
+                document.getElementById('model').value = data.model;
+            } catch (error) {
+                result.innerHTML = '<div class="error">❌ Ошибка проверки: ' + error.message + '</div>';
+            }
+        }
+        
+        // Проверяем статус при загрузке
+        checkStatus();
+    </script>
+</body>
+</html>

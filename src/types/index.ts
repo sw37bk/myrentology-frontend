@@ -254,3 +254,41 @@ export interface LoyaltyConfig {
   is_active: boolean;
   created_at: string;
 }
+
+// AI Assistant types
+export interface AISettings {
+  user_id: number;
+  model: string;
+  system_prompt?: string;
+  auto_booking_enabled: boolean;
+  response_style: string;
+  has_openai_key?: boolean;
+}
+
+export interface BookingTemplate {
+  id: number;
+  name: string;
+  description: string;
+  conditions: any;
+}
+
+export interface ResourceConditions {
+  resource_id: number;
+  template_id?: number;
+  template_name?: string;
+  individual_conditions: any;
+  template_conditions: any;
+  ai_description: string;
+}
+
+export interface AutoBooking {
+  user_id: number;
+  resource_id: number;
+  chat_id: string;
+  customer_name: string;
+  customer_phone: string;
+  start_date: string;
+  end_date: string;
+  total_price: number;
+  ai_context: any;
+}

@@ -1,159 +1,125 @@
-interface AIPrompt {
-  id: number;
+interface AISettings {
   user_id: number;
+  openai_api_key?: string;
+  model: string;
+  system_prompt?: string;
+  auto_booking_enabled: boolean;
+  response_style: string;
+}
+
+interface BookingTemplate {
+  id: number;
   name: string;
-  prompt_text: string;
-  is_active: boolean;
-  created_at: string;
+  description: string;
+  conditions: any;
 }
 
-interface AutoReplySettings {
-  id?: number;
+interface ResourceConditions {
+  resource_id: number;
+  template_id?: number;
+  template_name?: string;
+  individual_conditions: any;
+  template_conditions: any;
+  ai_description: string;
+}
+
+interface AutoBooking {
   user_id: number;
-  enabled: boolean;
-  response_delay: number;
-  working_hours_start: string;
-  working_hours_end: string;
-  offline_message: string;
-  welcome_message: string;
-  unavailable_message: string;
+  resource_id: number;
+  chat_id: string;
+  customer_name: string;
+  customer_phone: string;
+  start_date: string;
+  end_date: string;
+  total_price: number;
+  ai_context: any;
 }
 
-interface Message {
-  id: number;
-  chat_id: number;
-  message_id: string;
-  text: string;
-  is_from_customer: boolean;
-  timestamp: string;
-  is_read: boolean;
-  direction: 'incoming' | 'outgoing';
-}
-
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-let aiPrompts: AIPrompt[] = [
-  {
-    id: 1,
-    user_id: 1,
-    name: 'Основной промпт',
-    prompt_text: `Ты - помощник по аренде автомобилей и оборудования. Отвечай вежливо и профессионально.
-
-Основная информация:
-- Аренда посуточная
-- Необходим залог
-- Доставка обсуждается отдельно
-
-Всегда уточняй:
-1. Даты аренды
-2. Цель использования
-3. Опыт использования подобного оборудования
-
-Отвечай кратко и по делу. Предлагай перейти к бронированию.`,
-    is_active: true,
-    created_at: '2024-06-01T00:00:00Z',
-  },
-];
-
-let autoReplySettings: AutoReplySettings[] = [
-  {
-    user_id: 1,
-    enabled: true,
-    response_delay: 5,
-    working_hours_start: '09:00',
-    working_hours_end: '21:00',
-    offline_message: 'Спасибо за сообщение! Отвечу вам в рабочее время с 9:00 до 21:00.',
-    welcome_message: 'Здравствуйте! Спасибо за интерес к нашему предложению. Чем могу помочь?',
-    unavailable_message: 'К сожалению, на запрашиваемые даты товар занят. Могу предложить альтернативные даты или похожий товар.',
-  },
-];
+const API_BASE = '/api';
 
 export const aiAssistantApi = {
-  getPrompts: async (): Promise<AIPrompt[]> => {
-    await delay(300);
-    return aiPrompts;
+  // AI Settings
+  getSettings: async (userId: number): Promise<AISettings> => {
+    const response = await fetch(`${API_BASE}/ai-assistant.php?action=settings&user_id=${userId}`);
+    return response.json();
   },
 
-  createPrompt: async (data: Omit<AIPrompt, 'id' | 'created_at'>): Promise<AIPrompt> => {
-    await delay(500);
-    const newPrompt: AIPrompt = {
-      ...data,
-      id: aiPrompts.length + 1,
-      created_at: new Date().toISOString(),
-    };
-    aiPrompts.push(newPrompt);
-    return newPrompt;
+  saveSettings: async (settings: AISettings): Promise<void> => {
+    const response = await fetch(`${API_BASE}/ai-assistant.php?action=settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    });
+    if (!response.ok) throw new Error('Failed to save settings');
   },
 
-  updatePrompt: async (id: number, data: Partial<AIPrompt>): Promise<AIPrompt> => {
-    await delay(500);
-    const index = aiPrompts.findIndex(p => p.id === id);
-    if (index === -1) throw new Error('Prompt not found');
+  // Booking Templates
+  getTemplates: async (userId: number): Promise<BookingTemplate[]> => {
+    const response = await fetch(`${API_BASE}/booking-conditions.php?user_id=${userId}`);
+    const data = await response.json();
+    return data.templates || [];
+  },
+
+  createTemplate: async (template: Omit<BookingTemplate, 'id'>): Promise<BookingTemplate> => {
+    const response = await fetch(`${API_BASE}/booking-conditions.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(template)
+    });
+    return response.json();
+  },
+
+  // Resource Conditions
+  getResourceConditions: async (userId: number, resourceId: number): Promise<ResourceConditions> => {
+    const response = await fetch(`${API_BASE}/booking-conditions.php?user_id=${userId}&resource_id=${resourceId}`);
+    return response.json();
+  },
+
+  updateResourceConditions: async (conditions: ResourceConditions & { user_id: number }): Promise<void> => {
+    const response = await fetch(`${API_BASE}/booking-conditions.php`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(conditions)
+    });
+    if (!response.ok) throw new Error('Failed to update conditions');
+  },
+
+  // AI Response Generation
+  generateResponse: async (userId: number, chatId: string, message: string, resourceId?: number): Promise<string> => {
+    const response = await fetch(`${API_BASE}/ai-assistant.php?action=generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: userId,
+        chat_id: chatId,
+        message,
+        resource_id: resourceId
+      })
+    });
     
-    aiPrompts[index] = { ...aiPrompts[index], ...data };
-    return aiPrompts[index];
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+    return data.response;
   },
 
-  deletePrompt: async (id: number): Promise<void> => {
-    await delay(300);
-    const index = aiPrompts.findIndex(p => p.id === id);
-    if (index === -1) throw new Error('Prompt not found');
-    aiPrompts.splice(index, 1);
+  // Auto Booking
+  createAutoBooking: async (booking: AutoBooking): Promise<{ booking_id: number }> => {
+    const response = await fetch(`${API_BASE}/ai-assistant.php?action=create_booking`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(booking)
+    });
+    return response.json();
   },
 
-  getAutoReplySettings: async (): Promise<AutoReplySettings> => {
-    await delay(300);
-    return autoReplySettings[0];
-  },
-
-  updateAutoReplySettings: async (data: Partial<AutoReplySettings>): Promise<AutoReplySettings> => {
-    await delay(500);
-    autoReplySettings[0] = { ...autoReplySettings[0], ...data };
-    return autoReplySettings[0];
-  },
-
-  generateResponse: async (chatId: number, message: string, chatHistory: Message[]): Promise<string> => {
-    await delay(1000);
-
-    const lowerMessage = message.toLowerCase();
-
-    if (lowerMessage.includes('привет') || lowerMessage.includes('здравствуйте')) {
-      return 'Здравствуйте! Спасибо за обращение. На какой период интересует аренда?';
-    }
-
-    if (lowerMessage.includes('цена') || lowerMessage.includes('стоимость') || lowerMessage.includes('сколько')) {
-      return 'Цена указана в описании товара. На какой период планируете аренду? Рассчитаю точную стоимость.';
-    }
-
-    if (lowerMessage.includes('свободно') || lowerMessage.includes('доступн') || lowerMessage.includes('забронировать')) {
-      return 'Да, товар доступен. Укажите, пожалуйста, конкретные даты аренды (с ... по ...) для проверки и бронирования.';
-    }
-
-    if (lowerMessage.includes('залог')) {
-      return 'Да, требуется залог. Размер залога зависит от товара и срока аренды. Обычно это 20-50% от стоимости аренды.';
-    }
-
-    return 'Спасибо за вопрос! Уточните, пожалуйста, даты аренды и любые дополнительные пожелания, чтобы я мог помочь вам точнее.';
-  },
-
-  processIncomingMessage: async (chatId: number, message: string): Promise<{ shouldReply: boolean; replyText?: string }> => {
-    await delay(500);
-
-    const settings = autoReplySettings[0];
-    if (!settings.enabled) {
+  // Process incoming message with AI
+  processIncomingMessage: async (userId: number, chatId: string, message: string, resourceId?: number): Promise<{ shouldReply: boolean; replyText?: string }> => {
+    try {
+      const aiResponse = await aiAssistantApi.generateResponse(userId, chatId, message, resourceId);
+      return { shouldReply: true, replyText: aiResponse };
+    } catch (error) {
+      console.error('AI processing error:', error);
       return { shouldReply: false };
     }
-
-    const now = new Date();
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-    const startTime = parseInt(settings.working_hours_start.split(':')[0]) * 60 + parseInt(settings.working_hours_start.split(':')[1]);
-    const endTime = parseInt(settings.working_hours_end.split(':')[0]) * 60 + parseInt(settings.working_hours_end.split(':')[1]);
-
-    if (currentTime < startTime || currentTime > endTime) {
-      return { shouldReply: true, replyText: settings.offline_message };
-    }
-
-    const aiResponse = await aiAssistantApi.generateResponse(chatId, message, []);
-    return { shouldReply: true, replyText: aiResponse };
-  },
+  }
 };
